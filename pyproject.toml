@@ -1,0 +1,9 @@
+[project]
+name = "customer-coco-hol"
+version = "0.1.0"
+description = "Offline templates and validation for customer-specific Cortex Code HOL skills"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["streamlit>=1.42,<2", "PyYAML>=6,<7"]

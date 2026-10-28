@@ -1,0 +1,39 @@
+{
+  "skill": "customer-coco-hol",
+  "checked_on": "2026-10-26",
+  "layout": "three folders: public <repo-slug>/ repo, local facilitator/, local .build/",
+  "automated_tests": {
+    "status": "passed",
+    "tests": 18,
+    "skipped": 0,
+    "configuration_combinations": 18,
+    "command": "HOL_TEST_UPSTREAM=/path/to/reviewed/template uv run --project /path/to/customer-coco-hol --extra test python -m unittest discover -s /path/to/customer-coco-hol/tests -v",
+    "coverage": [
+      "three-folder layout and no stray top-level items",
+      "single setup.sql with 8 ordered sections, track-specific grants, commented cleanup",
+      "public-repo leak checks (internal files, emails, tokens, roster grants, unapproved customer name)",
+      "customer name only in facilitator materials when not approved",
+      "facilitator guide contains checklist, GitHub and Streamlit hosting steps",
+      "Streamlit app runs from repo root; all pages, downloads and completion checkboxes",
+      "data reproducibility, tampering and known-answer reconciliation",
+      "upstream compatibility, provenance, non-overwrite",
+      "hook fixtures and HTML escaping",
+      "publish_repo.py guards (account mismatch, ignored files, unpublished update, no repo create) with gh mocked"
+    ]
+  },
+  "manual_checks": {
+    "local_app_from_repo_root": "passed: streamlit run streamlit_app.py served the Admin setup page with theme fonts, both downloads and expected load results",
+    "deck": "7 sections including prep checklist (structure validated; slide 1-6 browser checks from the previous version)",
+    "publish_dry_run": "passed: dry run read active account sfc-gh-mli, listed 28 files; push and update blocked on owner mismatch (example-se)"
+  },
+  "not_run": [
+    "GitHub push (requires facilitator confirmation on a real event)",
+    "Streamlit Community Cloud deployment (requires facilitator browser sign-in)",
+    "live Snowflake setup, RBAC, ML, agents/CoWork, email",
+    "timed rehearsal"
+  ],
+  "tests_run": 20,
+  "tests_passed": 20,
+  "date": "2026-10-28",
+  "notes": "ML/Snowsight defaults to Workspace notebook (ml_spend_model.ipynb) with HOL compute pool in setup.sql; ml_training_checkpoint starter (.ipynb Snowsight, .py Desktop/CLI). Feature SQL verified read-only on inline rows in Snowflake; full checkpoint not yet run on a notebook service."
+}
