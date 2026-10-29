@@ -1,11 +1,40 @@
 # customer-coco-hol
 
-A Cortex Code skill that builds customer-specific, one-hour Cortex Code hands-on labs (HOLs) for Snowflake SEs, AEs and AI Platform sellers.
+A Cortex Code skill that builds custom, one-hour Cortex Code hands-on labs (HOLs).
 
-It produces:
-- a **public GitHub repo** with a Streamlit lab guide app, a single admin `setup.sql`, synthetic data and starter files;
+## Goal
+Help facilitators create a Cortex Code HOL tailored to a specific customer: their industry, their people's role and the Cortex Code interface they use, with a ready-to-run guide app, admin setup and prep checklist.
+
+It's built for two kinds of facilitators:
+- **Snowflake field teams** (SEs, AEs, AI Platform sellers) running a lab for a customer.
+- **Centers of Excellence (COEs) at customer companies** that want to run these labs for their own teams, without Snowflake in the room. Give them this repo; the skill walks them through the same steps.
+
+## What it asks you
+Before generating anything, Cortex Code asks a few rounds of questions (up to four at a time). Answers you've already given are reused, and it never asks for passwords or tokens.
+
+1. **The customer and audience**
+   - Customer (organization) name and industry
+   - Persona / track: Data Engineering, ML / Data Scientists, or Analysts
+   - Account setup: one existing customer account, or individual trial accounts
+   - Interface participants will use: Cortex Code Desktop, CLI or Snowsight
+2. **The event**
+   - Specific topics to cover (or the track's default agenda)
+   - Date, time zone and participant count
+   - Sponsor and Snowflake admin, and the approved sandbox names
+   - Where to save the generated lab
+3. **Publishing**
+   - The GitHub account and repo for the participant guide
+   - Whether the customer's name may appear publicly (default: no, use a neutral title like "Retail Cortex Code Lab")
+   - Hosting: Streamlit Community Cloud, or local only for now
+
+It then shows the lab design for your approval before building the package.
+
+## What it produces
+- a **GitHub repo** with a Streamlit lab guide app, a single admin `setup.sql`, synthetic data and starter files;
 - **local facilitator materials**: an HTML intro deck and a T−7 / T−3 / T−1 preparation guide;
 - tracks for **Data Engineering**, **ML / Data Scientists** and **Analysts**, on Cortex Code Desktop, CLI or Snowsight.
+
+**Note for COEs:** the built-in publish step creates a **public** GitHub repo (participants open the guide without signing in). If your company's policy doesn't allow that, choose "local only" hosting and share the generated folder internally instead.
 
 ## Install
 
