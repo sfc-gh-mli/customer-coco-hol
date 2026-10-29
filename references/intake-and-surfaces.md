@@ -16,7 +16,14 @@ Round 2:
    Save it as `outcome`; it appears on the app's Overview page and at the top of the facilitator guide, and shapes
    each step's situation and the final Next steps discussion.
 3. Participant count (default `10`; sizes per-participant schemas/roles and the ML Snowsight compute pool). Don't ask for the event date or time zone.
-4. Sponsor/admin ownership and approved sandbox naming (no secrets).
+4. Snowflake objects (customer account only; skip for trials): the participant **role**, **database** and **warehouse**
+   to use, and which already exist. Text default `role HOL_<ORG>_P001 (new), database HOL_<ORG>_<YYYYMMDD> (new),
+   warehouse HOL_<ORG>_WH (new)`; the customer replaces any with an existing name marked `(existing)`.
+   Save names in `participant_role`, `sandbox_database`, `warehouse`, and list reused ones in `existing_objects`.
+   New names must start `HOL_`; never accept ACCOUNTADMIN/SECURITYADMIN/SYSADMIN/USERADMIN/ORGADMIN/PUBLIC as the
+   participant role, or SNOWFLAKE/SNOWFLAKE_SAMPLE_DATA as the database. Warn that one existing role shared by all
+   participants means they can see each other's schemas. Sponsor and admin owners are recorded in the facilitator
+   guide, not asked here.
 
 Round 3 — publishing (customer guide is delivered as a public GitHub repo + public Streamlit app):
 1. Facilitator's public GitHub account/org and repo URL (text default `https://github.com/<github-user>/<org-slug>-coco-hol`). Never ask for tokens or passwords.
@@ -42,6 +49,7 @@ Use JSON. Allowed enums: `track`: `data-engineering`, `machine-learning`, `analy
   "topics": [],
   "outcome": "Participants leave able to repeat one real workflow on their own data, with a clear next step.",
   "event": {"participants": 10},
+  "existing_objects": [],
   "sandbox_database": "HOL_EXAMPLE_20261026",
   "warehouse": "HOL_EXAMPLE_WH",
   "participant_schema": "P001",
@@ -59,6 +67,8 @@ Use JSON. Allowed enums: `track`: `data-engineering`, `machine-learning`, `analy
 ```
 
 `public.include_facilitator` (default false) also writes the deck and facilitator guide into the public repo's `facilitator/` folder so the facilitator can open them from GitHub on the day. Those copies use the public title instead of the customer name unless `show_customer_name` is true, and pass the same public safety checks. Ask the facilitator before turning it on: anyone with the link can read the prep notes.
+
+`existing_objects` (customer accounts only) lists any of `database`, `warehouse`, `role` that already exist. `setup.sql` then skips creating them, still creates the lab's `SOURCE` and participant schemas inside an existing database (after a preflight `SHOW SCHEMAS` stop), and its commented cleanup drops only those schemas and never the customer's database, warehouse or role.
 
 Identifier parameters must match `[A-Z][A-Z0-9_]{0,127}`. Sandbox database and warehouse start `HOL_`; refuse system/production namespaces. These conservative names avoid quoting ambiguity; display organization names remain separate. Never interpolate display text into SQL or executable Python. Render HTML with escaping, Python data via JSON serialization, SQL identifiers via validated tokens, and SQL string literals via a dedicated encoder.
 

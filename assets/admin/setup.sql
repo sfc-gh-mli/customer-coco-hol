@@ -12,16 +12,14 @@ SELECT CURRENT_ORGANIZATION_NAME() AS ORGANIZATION,
        CURRENT_ACCOUNT_NAME() AS ACCOUNT_NAME,
        CURRENT_USER() AS USER_NAME,
        CURRENT_ROLE() AS ROLE_NAME;
--- Proposed new objects: database {{DB}}, warehouse {{WH}}, role {{ROLE}}.
--- STOP: confirm the account and that these names are unused.
+{{PREFLIGHT}}
 
 -- ---------------------------------------------------------------------------
 -- SECTION 2: Create the sandbox database, warehouse, stage and tables.
 -- ---------------------------------------------------------------------------
-CREATE DATABASE {{DB}} COMMENT = 'Synthetic Cortex Code hands-on lab sandbox';
+{{CREATE_DB}}
 CREATE SCHEMA {{DB}}.SOURCE;
-CREATE WAREHOUSE {{WH}}
-  WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE;
+{{CREATE_WH}}
 CREATE FILE FORMAT {{DB}}.SOURCE.HOL_CSV
   TYPE = CSV SKIP_HEADER = 1 FIELD_OPTIONALLY_ENCLOSED_BY = '"' ERROR_ON_COLUMN_COUNT_MISMATCH = TRUE;
 CREATE STAGE {{DB}}.SOURCE.HOL_DATA
@@ -62,7 +60,7 @@ SELECT SUM(IFF(STATUS = 'COMPLETED', AMOUNT, 0)) AS NET_SPEND FROM {{DB}}.SOURCE
 -- Repeat this section once per participant with a new schema/role pair
 -- (P002 / {{ROLE_PREFIX}}P002, ...). One shared role is NOT isolation.
 -- ---------------------------------------------------------------------------
-CREATE ROLE {{ROLE}};
+{{CREATE_ROLE}}
 CREATE SCHEMA {{DB}}.{{SCHEMA}};
 GRANT USAGE ON DATABASE {{DB}} TO ROLE {{ROLE}};
 GRANT USAGE ON SCHEMA {{DB}}.SOURCE TO ROLE {{ROLE}};
@@ -103,7 +101,5 @@ DROP TABLE {{DB}}.{{SCHEMA}}.HOL_WRITE_PROBE;
 -- SECTION 8: Cleanup AFTER the event. DISABLED. Review inventory and retention,
 -- stop any schedules/monitors first, then uncomment only approved lines.
 -- ---------------------------------------------------------------------------
-{{TRACK_CLEANUP}}-- DROP DATABASE {{DB}};
--- DROP WAREHOUSE {{WH}};
--- DROP ROLE {{ROLE}};
+{{TRACK_CLEANUP}}{{CLEANUP_OBJECTS}}
 -- Never drop customer users.

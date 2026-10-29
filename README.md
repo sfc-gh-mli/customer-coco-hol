@@ -21,7 +21,7 @@ Before generating anything, Cortex Code asks a few rounds of questions (up to fo
    - Specific topics to cover (or the track's default agenda)
    - The outcome and end-user experience you want: what participants should walk away able to do, and how the hour should feel
    - Participant count
-   - Sponsor and Snowflake admin, and the approved sandbox names
+   - Customer account only: the participant role, database and warehouse to use (new lab objects, or existing ones in their account)
 3. **Publishing**
    - The GitHub account and repo for the participant guide
    - Whether the customer's name may appear publicly (default: no, use a neutral title like "Retail Cortex Code Lab")

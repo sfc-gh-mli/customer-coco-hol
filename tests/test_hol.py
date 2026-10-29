@@ -102,6 +102,31 @@ class PackageTests(unittest.TestCase):
     def package(self, config=None, name="package", mode="archive"):
         return assemble(config or BASE, UPSTREAM, self.parent / name, mode)
 
+    def test_existing_customer_objects(self):
+        config = {**BASE, "sandbox_database": "ANALYTICS_SANDBOX", "warehouse": "COMPUTE_WH",
+                  "participant_role": "DATA_ENGINEER", "existing_objects": ["database", "warehouse", "role"]}
+        self.assertEqual(config_errors(config), [])
+        self.assertTrue(config_errors({**config, "existing_objects": []}))
+        self.assertTrue(config_errors({**config, "account_mode": "trial"}))
+        self.assertTrue(config_errors({**config, "participant_role": "ACCOUNTADMIN"}))
+        self.assertTrue(config_errors({**config, "sandbox_database": "SNOWFLAKE"}))
+        path = self.package(config, name="existing")
+        self.assertEqual(validate_package(path)["errors"], [])
+        setup = (path / REPO / "admin/setup.sql").read_text()
+        executable = "\n".join(line for line in setup.splitlines() if not line.lstrip().startswith("--"))
+        for statement in ("CREATE DATABASE", "CREATE WAREHOUSE", "CREATE ROLE"):
+            self.assertNotIn(statement, executable)
+        self.assertIn("CREATE SCHEMA ANALYTICS_SANDBOX.SOURCE;", executable)
+        self.assertIn("SHOW SCHEMAS IN DATABASE ANALYTICS_SANDBOX;", executable)
+        self.assertIn("GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE DATA_ENGINEER;", executable)
+        cleanup = setup[setup.index("SECTION 8"):]
+        self.assertIn("-- DROP SCHEMA ANALYTICS_SANDBOX.SOURCE;", cleanup)
+        for name in ("DATABASE ANALYTICS_SANDBOX", "WAREHOUSE COMPUTE_WH", "ROLE DATA_ENGINEER"):
+            self.assertNotIn(f"DROP {name}", cleanup)
+        fresh = (self.package(name="fresh") / REPO / "admin/setup.sql").read_text()
+        self.assertIn("CREATE DATABASE HOL_EXAMPLE_20261026", fresh)
+        self.assertIn("-- DROP DATABASE HOL_EXAMPLE_20261026;", fresh)
+
     def test_ml_workspace_notebook_in_snowsight(self):
         import ast
         for interface, ext in (("snowsight", "ipynb"), ("desktop", "py")):

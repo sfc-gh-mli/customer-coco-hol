@@ -46,6 +46,47 @@ GRANT USAGE ON COMPUTE POOL {{POOL}} TO ROLE {{ROLE}};
 -- Participant smoke test (Snowsight, as the participant role): create a Workspace notebook,
 -- connect it to {{POOL}} with a 60-minute idle timeout, and run ml_training_checkpoint.ipynb
 -- from the lab app's ml-04 page top to bottom."""
+def object_blocks(config: dict, tokens: dict) -> dict:
+    """setup.sql blocks that create new lab objects or reuse the customer's existing ones."""
+    existing = set(config.get("existing_objects", []))
+    db, wh, role, schema = tokens["DB"], tokens["WH"], tokens["ROLE"], tokens["SCHEMA"]
+    new = [f"{kind} {name}" for kind, name in (("database", db), ("warehouse", wh), ("role", role))
+           if kind not in existing]
+    reused = [f"{kind} {name}" for kind, name in (("database", db), ("warehouse", wh), ("role", role))
+              if kind in existing]
+    preflight = []
+    if new:
+        preflight.append(f"-- New objects this script creates: {', '.join(new)}.")
+    if reused:
+        preflight.append(f"-- Existing objects this script reuses (not created, not dropped): {', '.join(reused)}.")
+    if "database" in existing:
+        preflight += [f"SHOW SCHEMAS IN DATABASE {db};",
+                      f"-- STOP if {db} already has a SOURCE or {schema} schema: the lab creates both."]
+    if "role" in existing:
+        preflight.append(f"-- {role} is shared: every participant who uses it can see the others' schemas.")
+    preflight.append("-- STOP: confirm the account" + (" and that the new names are unused." if new else "."))
+    cleanup = []
+    if "database" in existing:
+        cleanup += [f"-- DROP SCHEMA {db}.{schema};", f"-- DROP SCHEMA {db}.SOURCE;",
+                    f"-- {db} is the customer's existing database: drop only the lab schemas above."]
+    else:
+        cleanup.append(f"-- DROP DATABASE {db};")
+    cleanup.append(f"-- {wh} is an existing warehouse: do not drop it." if "warehouse" in existing
+                   else f"-- DROP WAREHOUSE {wh};")
+    cleanup.append(f"-- {role} is an existing role: revoke the lab grants instead of dropping it." if "role" in existing
+                   else f"-- DROP ROLE {role};")
+    return {
+        "PREFLIGHT": "\n".join(preflight),
+        "CREATE_DB": (f"-- Using existing database {db}." if "database" in existing
+                      else f"CREATE DATABASE {db} COMMENT = 'Synthetic Cortex Code hands-on lab sandbox';"),
+        "CREATE_WH": (f"-- Using existing warehouse {wh}." if "warehouse" in existing
+                      else f"CREATE WAREHOUSE {wh}\n  WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE "
+                           "INITIALLY_SUSPENDED = TRUE;"),
+        "CREATE_ROLE": (f"-- Using existing role {role}." if "role" in existing else f"CREATE ROLE {role};"),
+        "CLEANUP_OBJECTS": "\n".join(cleanup),
+    }
+
+
 INTERFACE_NOTES = {
     "desktop": ("- Use the **Plan** toggle before multi-step work and keep default approvals on.\n"
                 "- Project skills live in `.cortex/skills/<name>/SKILL.md` in your project folder.\n"
@@ -192,6 +233,7 @@ def assemble(config: dict, upstream: Path, output: Path, source_mode="archive") 
     tokens["POOL"] = config["warehouse"].removesuffix("_WH") + "_POOL"
     tokens["POOL_NODES"] = str(max(1, int(config["event"].get("participants") or 1)) + 1)
     tokens["TRACK_GRANTS"] = render_tokens(TRACK_GRANTS[config["track"]] + (ML_NOTEBOOK_SETUP if notebooks else ""), tokens)
+    tokens.update(object_blocks(config, tokens))
     tokens["TRACK_CLEANUP"] = (f"-- Suspend notebook services first (SHOW SERVICES OF TYPE NOTEBOOK), then:\n"
                                f"-- DROP COMPUTE POOL {tokens['POOL']};\n" if notebooks else "")
     trial = ("\n- **Trial accounts:** each participant runs `admin/setup.sql` in their own trial as the account "

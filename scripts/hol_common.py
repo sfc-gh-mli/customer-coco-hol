@@ -10,6 +10,12 @@ from pathlib import Path
 TRACKS = {"data-engineering", "machine-learning", "analysts"}
 INTERFACES = {"desktop", "cli", "snowsight"}
 ACCOUNT_MODES = {"customer", "trial"}
+# Customer-account labs may reuse objects the customer already has.
+EXISTING_FIELDS = {"database": "sandbox_database", "warehouse": "warehouse", "role": "participant_role"}
+RESERVED_NAMES = {
+    "database": {"SNOWFLAKE", "SNOWFLAKE_SAMPLE_DATA"},
+    "role": {"ACCOUNTADMIN", "SECURITYADMIN", "SYSADMIN", "USERADMIN", "ORGADMIN", "PUBLIC"},
+}
 # Where ML work lives per interface: a Workspace notebook in Snowsight, a script locally.
 ML_WORKSPACE = {
     "snowsight": ("ml_spend_model.ipynb", "a Snowflake Workspace notebook (.ipynb) in this workspace, "
@@ -52,9 +58,19 @@ def config_errors(config: dict) -> list[str]:
         value = config.get(field, "")
         if not isinstance(value, str) or not IDENTIFIER.fullmatch(value):
             errors.append(f"Invalid identifier: {field}")
-    for field in ("sandbox_database", "warehouse", "participant_role"):
-        if not str(config.get(field, "")).startswith("HOL_"):
-            errors.append(f"{field} must start HOL_")
+    existing = config.get("existing_objects", [])
+    if not isinstance(existing, list) or not set(existing) <= set(EXISTING_FIELDS):
+        errors.append("existing_objects must list only database, warehouse, role")
+        existing = []
+    elif existing and config.get("account_mode") != "customer":
+        errors.append("existing_objects applies only to account_mode customer")
+    for kind, field in EXISTING_FIELDS.items():
+        value = str(config.get(field, ""))
+        # Objects the setup script creates must be clearly lab-owned; existing ones keep their names.
+        if kind not in existing and not value.startswith("HOL_"):
+            errors.append(f"{field} must start HOL_ (or list it in existing_objects)")
+        if value in RESERVED_NAMES.get(kind, set()):
+            errors.append(f"{field} must not be the system/admin object {value}")
     if config.get("participant_schema") in {"SOURCE", "PUBLIC", "INFORMATION_SCHEMA"}:
         errors.append("Participant schema must not be a shared/system schema")
     if type(config.get("data_seed")) is not int:
