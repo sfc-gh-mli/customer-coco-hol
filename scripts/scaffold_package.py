@@ -272,9 +272,11 @@ def assemble(config: dict, upstream: Path, output: Path, source_mode="archive") 
     write_json(repo / "app/curriculum.json", curriculum)
     (repo / "app/components.py").write_text(components, encoding="utf-8")
     shutil.copyfile(SKILL_ROOT / "assets/workshop/streamlit_app.py", repo / "streamlit_app.py")
-    (repo / "requirements.txt").write_text("streamlit>=1.42,<2\n", encoding="utf-8")
+    (repo / "requirements.txt").write_text("streamlit>=1.50,<2\n", encoding="utf-8")
     (repo / ".gitignore").write_text(".venv/\n__pycache__/\n*.pyc\n.DS_Store\n.streamlit/secrets.toml\n", encoding="utf-8")
     shutil.copytree(upstream / "workshop_guide/.streamlit", repo / ".streamlit")
+    # Snowflake-site palette (navy sidebar, blue/amber accents) on top of the upstream fonts.
+    shutil.copyfile(SKILL_ROOT / "assets/workshop/config.toml", repo / ".streamlit/config.toml")
     shutil.copytree(upstream / "workshop_guide/static", repo / "static",
                     ignore=shutil.ignore_patterns("*.csv", "*.zip"))
     (repo / "admin/setup.sql").write_text(render_tokens((SKILL_ROOT / "assets/admin/setup.sql").read_text(), tokens),

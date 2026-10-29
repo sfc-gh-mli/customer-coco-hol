@@ -16,22 +16,38 @@ CURRICULUM = json.loads((ROOT / "app/curriculum.json").read_text())
 STARTERS_FILE = ROOT / "app/starters.json"
 STARTERS = json.loads(STARTERS_FILE.read_text()) if STARTERS_FILE.is_file() else {}
 st.set_page_config(page_title=LAB["title"], layout="wide")
+# Colors come from .streamlit/config.toml. This small stylesheet only targets keyed containers
+# (.st-key-*), adding the Snowflake-site gradient hero and tinted callout cards.
+st.html("""<style>
+.st-key-hero { background: linear-gradient(115deg, #11567F 0%, #249EDC 62%, #7DD3FC 100%);
+  border-radius: 1rem; padding: 2rem 2.25rem; }
+.st-key-hero h1, .st-key-hero p, .st-key-hero span, .st-key-hero [data-testid="stCaptionContainer"] { color: #FFFFFF; }
+.st-key-situation { background: #EEF7FC; border-left: 4px solid #249EDC; border-radius: 0.75rem;
+  padding: 1rem 1.25rem; }
+.st-key-sandbox { background: #F3FAFE; border: 1px solid #D3E7F3; border-radius: 0.75rem; padding: 1rem 1.25rem; }
+.st-key-outcome { background: #FFF6E0; border-left: 4px solid #FFAA00; border-radius: 0.75rem; padding: 1rem 1.25rem; }
+.st-key-next-steps { background: #FFF6E0; border-left: 4px solid #FFAA00; border-radius: 0.75rem;
+  padding: 1rem 1.25rem; }
+</style>""")
 components.SESSION_PROMPTS = {
     index: [prompt["id"] for prompt in step["prompts"]] for index, step in enumerate(CURRICULUM, 1)
 }
 
 
 def overview():
-    st.title(LAB["title"])
-    st.write(LAB["scenario"])
+    with st.container(key="hero"):
+        st.title(LAB["title"])
+        st.markdown(LAB["scenario"])
+        st.markdown(f":material/school: {LAB['track_label']} &nbsp;·&nbsp; :material/terminal: Cortex Code "
+                    f"{LAB['interface_label']} &nbsp;·&nbsp; :material/schedule: 60 minutes")
+    st.space("small")
     if LAB.get("outcome"):
-        with st.container(border=True):
-            st.markdown(f"**What you'll walk away with**  \n{LAB['outcome']}")
-    st.caption(f"{LAB['track_label']} | Cortex Code {LAB['interface_label']} | 60 minutes")
+        with st.container(key="outcome"):
+            st.markdown(f"**:material/flag: What you'll walk away with**  \n{LAB['outcome']}")
     st.info("All data is synthetic. Read from the shared SOURCE schema; build only in your assigned schema. "
             "Work in this order: Plan, review, approve, execute, validate.")
-    with st.container(border=True):
-        st.markdown(f"**Your sandbox**  \nDatabase `{LAB['database']}` · schema `{LAB['schema']}` · "
+    with st.container(key="sandbox"):
+        st.markdown(f"**:material/database: Your sandbox**  \nDatabase `{LAB['database']}` · schema `{LAB['schema']}` · "
                     f"role `{LAB['role']}` · warehouse `{LAB['warehouse']}`")
         st.caption("Everyone uses the same role. Your facilitator assigns your own schema (P001, P002, ...); "
                    "use that schema in place of the one shown, and build only there.")
@@ -61,11 +77,13 @@ def admin():
 
 def exercise(step):
     st.title(step["title"])
-    st.caption(f":material/schedule: {step['minutes']} minutes · {step['mode']}")
+    with st.container(horizontal=True):
+        st.badge(f"{step['minutes']} minutes", icon=":material/schedule:", color="blue")
+        st.badge(step["mode"], icon=":material/play_circle:", color="orange" if "hands" in step["mode"] else "violet")
     components.render_technologies_used(step["technologies"])
     st.space("small")
-    st.markdown("#### The situation")
-    with st.container(border=True):
+    st.markdown("#### :material/explore: The situation")
+    with st.container(key="situation"):
         st.markdown(step["situation"])
     st.space("small")
     starters = STARTERS.get(step["id"], [])
@@ -101,7 +119,7 @@ def exercise(step):
         st.markdown("#### :material/forum: Next steps: bring it to your business")
         st.info("Discuss with your team before you leave: where could these capabilities solve a real problem for you?",
                 icon=":material/lightbulb:")
-        with st.container(border=True):
+        with st.container(key="next-steps"):
             st.markdown("\n".join(f"- {question}" for question in step["discussion"]))
 
 

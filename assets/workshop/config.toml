@@ -1,0 +1,63 @@
+# Lab guide theme: palette inspired by snowflake.com (navy, Snowflake blue, sky, amber).
+[theme]
+base = "light"
+primaryColor = "#11567F"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#EEF7FC"
+textColor = "#123456"
+linkColor = "#11567F"
+borderColor = "#D3E7F3"
+codeBackgroundColor = "#F3FAFE"
+blueColor = "#249EDC"
+orangeColor = "#FFAA00"
+violetColor = "#3860BE"
+greenColor = "#1F9D6B"
+font = "Inter"
+codeFont = "JetBrainsMono"
+headingFontWeights = [700, 700, 600, 600, 600, 600]
+baseRadius = "0.75rem"
+buttonRadius = "0.5rem"
+showSidebarBorder = false
+chartCategoricalColors = ["#249EDC", "#11567F", "#FFAA00", "#7DD3FC", "#3860BE", "#1F9D6B", "#123456"]
+
+[theme.sidebar]
+backgroundColor = "#11567F"
+secondaryBackgroundColor = "#174D6A"
+codeBackgroundColor = "#174D6A"
+textColor = "#FFFFFF"
+borderColor = "#1E6D94"
+primaryColor = "#7DD3FC"
+linkColor = "#9DE3FF"
+
+[server]
+enableStaticServing = true
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/Inter-Regular.ttf"
+weight = 400
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/Inter-Medium.ttf"
+weight = 500
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/Inter-SemiBold.ttf"
+weight = 600
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/Inter-Bold.ttf"
+weight = 700
+
+[[theme.fontFaces]]
+family = "JetBrainsMono"
+url = "app/static/JetBrainsMono-Regular.ttf"
+weight = 400
+
+[[theme.fontFaces]]
+family = "JetBrainsMono"
+url = "app/static/JetBrainsMono-Medium.ttf"
+weight = 500
