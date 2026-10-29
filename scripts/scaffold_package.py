@@ -16,7 +16,8 @@ import subprocess
 from datetime import date, timedelta
 from pathlib import Path
 
-from hol_common import (REPOSITORY, config_errors, curriculum_from_reference, public_slug, read_json,
+from hol_common import (REPOSITORY, config_errors, created_objects, curriculum_from_reference, object_prefix,
+                        public_slug, read_json,
                         render_tokens, source_hashes, upstream_errors, write_json)
 from synthetic_data import generate_data
 
@@ -65,16 +66,29 @@ def object_blocks(config: dict, tokens: dict) -> dict:
     if "role" in existing:
         preflight.append(f"-- {role} is shared: every participant who uses it can see the others' schemas.")
     preflight.append("-- STOP: confirm the account" + (" and that the new names are unused." if new else "."))
-    cleanup = []
-    if "database" in existing:
-        cleanup += [f"-- DROP SCHEMA {db}.{schema};", f"-- DROP SCHEMA {db}.SOURCE;",
-                    f"-- {db} is the customer's existing database: drop only the lab schemas above."]
+    made = created_objects(config)
+    prefix = object_prefix(config)
+    cleanup = [f"-- Inventory first: everything below must appear here, and nothing else is dropped.",
+               f"-- SHOW DATABASES LIKE '{prefix}%'; SHOW WAREHOUSES LIKE '{prefix}%'; SHOW ROLES LIKE '{prefix}%';",
+               f"-- SHOW SCHEMAS IN DATABASE {db};"]
+    if made["pool"]:
+        cleanup += [f"-- SHOW COMPUTE POOLS LIKE '{prefix}%';",
+                    "-- Suspend participants' notebook services first (SHOW SERVICES OF TYPE NOTEBOOK), then:",
+                    f"-- DROP COMPUTE POOL {made['pool']};"]
+    if made["database"]:
+        cleanup.append(f"-- DROP DATABASE {made['database']};  -- also removes the lab schemas inside it")
     else:
-        cleanup.append(f"-- DROP DATABASE {db};")
-    cleanup.append(f"-- {wh} is an existing warehouse: do not drop it." if "warehouse" in existing
-                   else f"-- DROP WAREHOUSE {wh};")
-    cleanup.append(f"-- {role} is an existing role: revoke the lab grants instead of dropping it." if "role" in existing
-                   else f"-- DROP ROLE {role};")
+        cleanup += [f"-- DROP SCHEMA {db}.{name};" for name in made["schemas"]]
+        cleanup.append(f"-- {db} is an existing database: drop only the lab schemas listed above.")
+    if made["warehouse"]:
+        cleanup.append(f"-- DROP WAREHOUSE {made['warehouse']};")
+    else:
+        cleanup.append(f"-- {wh} is an existing warehouse: not dropped.")
+    cleanup += [f"-- DROP ROLE {name};" for name in made["roles"]]
+    if "role" in existing:
+        cleanup.append(f"-- {role} is an existing role: not dropped; revoke the lab grants from it instead.")
+    if len(made["schemas"]) > 1 or len(made["roles"]) > 1:
+        cleanup.append("-- Lines above cover every participant from Section 5; delete any you didn't create.")
     return {
         "PREFLIGHT": "\n".join(preflight),
         "CREATE_DB": (f"-- Using existing database {db}." if "database" in existing
@@ -84,6 +98,11 @@ def object_blocks(config: dict, tokens: dict) -> dict:
                            "INITIALLY_SUSPENDED = TRUE;"),
         "CREATE_ROLE": (f"-- Using existing role {role}." if "role" in existing else f"CREATE ROLE {role};"),
         "CLEANUP_OBJECTS": "\n".join(cleanup),
+        "SECTION5_NOTE": (f"-- Repeat this section once per participant with a new schema (P002, ...).\n"
+                          f"-- All participants share the existing role {role}, so they can see each other's schemas."
+                          if "role" in existing else
+                          f"-- Repeat this section once per participant with a new schema/role pair\n"
+                          f"-- (P002 / {tokens['ROLE_PREFIX']}P002, ...). One shared role is NOT isolation."),
     }
 
 
@@ -230,12 +249,11 @@ def assemble(config: dict, upstream: Path, output: Path, source_mode="archive") 
               "START_DATE": data_manifest["start_inclusive"][:10],
               "END_DATE": (date.fromisoformat(config["as_of_date"]) + timedelta(days=1)).isoformat()}
     notebooks = config["track"] == "machine-learning" and config["interface"] == "snowsight"
-    tokens["POOL"] = config["warehouse"].removesuffix("_WH") + "_POOL"
+    tokens["POOL"] = created_objects(config)["pool"] or ""
     tokens["POOL_NODES"] = str(max(1, int(config["event"].get("participants") or 1)) + 1)
     tokens["TRACK_GRANTS"] = render_tokens(TRACK_GRANTS[config["track"]] + (ML_NOTEBOOK_SETUP if notebooks else ""), tokens)
     tokens.update(object_blocks(config, tokens))
-    tokens["TRACK_CLEANUP"] = (f"-- Suspend notebook services first (SHOW SERVICES OF TYPE NOTEBOOK), then:\n"
-                               f"-- DROP COMPUTE POOL {tokens['POOL']};\n" if notebooks else "")
+    tokens["TRACK_CLEANUP"] = ""
     trial = ("\n- **Trial accounts:** each participant runs `admin/setup.sql` in their own trial as the account "
              "owner before the lab, then switches to the participant role." if config["account_mode"] == "trial" else "")
 

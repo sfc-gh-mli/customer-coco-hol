@@ -16,11 +16,13 @@ Round 2:
    Save it as `outcome`; it appears on the app's Overview page and at the top of the facilitator guide, and shapes
    each step's situation and the final Next steps discussion.
 3. Participant count (default `10`; sizes per-participant schemas/roles and the ML Snowsight compute pool). Don't ask for the event date or time zone.
-4. Snowflake objects (customer account only; skip for trials): the participant **role**, **database** and **warehouse**
-   to use, and which already exist. Text default `role HOL_<ORG>_P001 (new), database HOL_<ORG>_<YYYYMMDD> (new),
-   warehouse HOL_<ORG>_WH (new)`; the customer replaces any with an existing name marked `(existing)`.
-   Save names in `participant_role`, `sandbox_database`, `warehouse`, and list reused ones in `existing_objects`.
-   New names must start `HOL_`; never accept ACCOUNTADMIN/SECURITYADMIN/SYSADMIN/USERADMIN/ORGADMIN/PUBLIC as the
+4. Snowflake objects (customer account only; skip for trials): the **prefix** for new lab objects, and the
+   participant **role**, **database** and **warehouse** to use, noting which already exist. Text default
+   `prefix HOL_; role HOL_<ORG>_P001 (new), database HOL_<ORG>_<YYYYMMDD> (new), warehouse HOL_<ORG>_WH (new)`;
+   the customer swaps in their own prefix (e.g. `SBX_DE_`) and marks any existing object `(existing)`.
+   Save `object_prefix`, `participant_role`, `sandbox_database`, `warehouse`, and list reused ones in
+   `existing_objects`. Every new object must start with the prefix (3-32 uppercase characters ending in `_`, not
+   starting `SNOWFLAKE`); trials use `HOL_`. Never accept ACCOUNTADMIN/SECURITYADMIN/SYSADMIN/USERADMIN/ORGADMIN/PUBLIC as the
    participant role, or SNOWFLAKE/SNOWFLAKE_SAMPLE_DATA as the database. Warn that one existing role shared by all
    participants means they can see each other's schemas. Sponsor and admin owners are recorded in the facilitator
    guide, not asked here.
@@ -49,6 +51,7 @@ Use JSON. Allowed enums: `track`: `data-engineering`, `machine-learning`, `analy
   "topics": [],
   "outcome": "Participants leave able to repeat one real workflow on their own data, with a clear next step.",
   "event": {"participants": 10},
+  "object_prefix": "HOL_",
   "existing_objects": [],
   "sandbox_database": "HOL_EXAMPLE_20261026",
   "warehouse": "HOL_EXAMPLE_WH",
@@ -70,7 +73,7 @@ Use JSON. Allowed enums: `track`: `data-engineering`, `machine-learning`, `analy
 
 `existing_objects` (customer accounts only) lists any of `database`, `warehouse`, `role` that already exist. `setup.sql` then skips creating them, still creates the lab's `SOURCE` and participant schemas inside an existing database (after a preflight `SHOW SCHEMAS` stop), and its commented cleanup drops only those schemas and never the customer's database, warehouse or role.
 
-Identifier parameters must match `[A-Z][A-Z0-9_]{0,127}`. Sandbox database and warehouse start `HOL_`; refuse system/production namespaces. These conservative names avoid quoting ambiguity; display organization names remain separate. Never interpolate display text into SQL or executable Python. Render HTML with escaping, Python data via JSON serialization, SQL identifiers via validated tokens, and SQL string literals via a dedicated encoder.
+Identifier parameters must match `[A-Z][A-Z0-9_]{0,127}`. New database, warehouse, role and compute pool names start with `object_prefix`; refuse system/production namespaces. Cleanup in `setup.sql` is generated from the exact objects the script creates (`created_objects` in `hol_common.py`), starts with an inventory step, and never names an existing object. These conservative names avoid quoting ambiguity; display organization names remain separate. Never interpolate display text into SQL or executable Python. Render HTML with escaping, Python data via JSON serialization, SQL identifiers via validated tokens, and SQL string literals via a dedicated encoder.
 
 Participant schema and role are defaults for one example; expand from an admin-approved roster. Do not publish usernames/contact lists in the workshop app. Trials repeat the setup independently in each trial account.
 

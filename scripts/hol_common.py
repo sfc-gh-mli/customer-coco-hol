@@ -12,6 +12,9 @@ INTERFACES = {"desktop", "cli", "snowsight"}
 ACCOUNT_MODES = {"customer", "trial"}
 # Customer-account labs may reuse objects the customer already has.
 EXISTING_FIELDS = {"database": "sandbox_database", "warehouse": "warehouse", "role": "participant_role"}
+DEFAULT_PREFIX = "HOL_"
+# Prefix for every object setup.sql creates; customer-chosen so it fits their naming standard.
+PREFIX = re.compile(r"[A-Z][A-Z0-9_]{1,30}_")
 RESERVED_NAMES = {
     "database": {"SNOWFLAKE", "SNOWFLAKE_SAMPLE_DATA"},
     "role": {"ACCOUNTADMIN", "SECURITYADMIN", "SYSADMIN", "USERADMIN", "ORGADMIN", "PUBLIC"},
@@ -44,6 +47,38 @@ def write_json(path: Path, value):
         output.write("\n")
 
 
+def object_prefix(config: dict) -> str:
+    return config.get("object_prefix", DEFAULT_PREFIX)
+
+
+def created_objects(config: dict) -> dict:
+    """Exact names of every object setup.sql creates (Section 5 repeated per participant).
+
+    Cleanup is generated from this list only, so it can never name an existing customer object.
+    """
+    existing = set(config.get("existing_objects", []))
+    count = max(1, int(config.get("event", {}).get("participants") or 1))
+    schema, role = config["participant_schema"], config["participant_role"]
+    numbered = re.fullmatch(r"P(\d{3})", schema) and int(schema[1:]) == 1
+    schemas = [f"P{n:03d}" for n in range(1, count + 1)] if numbered else [schema]
+    if "role" in existing:
+        roles = []
+    elif numbered and role.endswith(schema):
+        roles = [role.removesuffix(schema) + name for name in schemas]
+    else:
+        roles = [role]
+    prefix = object_prefix(config)
+    pool = (config["warehouse"].removesuffix("_WH") if "warehouse" not in existing else prefix + "NOTEBOOK") + "_POOL"
+    notebooks = config.get("track") == "machine-learning" and config.get("interface") == "snowsight"
+    return {
+        "database": None if "database" in existing else config["sandbox_database"],
+        "warehouse": None if "warehouse" in existing else config["warehouse"],
+        "schemas": (["SOURCE"] if "database" in existing else []) + schemas,
+        "roles": roles,
+        "pool": pool if notebooks else None,
+    }
+
+
 def config_errors(config: dict) -> list[str]:
     errors = []
     if not isinstance(config, dict):
@@ -64,11 +99,16 @@ def config_errors(config: dict) -> list[str]:
         existing = []
     elif existing and config.get("account_mode") != "customer":
         errors.append("existing_objects applies only to account_mode customer")
+    prefix = object_prefix(config)
+    if not isinstance(prefix, str) or not PREFIX.fullmatch(prefix) or prefix.startswith("SNOWFLAKE"):
+        errors.append("object_prefix must be 3-32 uppercase characters ending in _ (e.g. HOL_, SBX_DE_)")
+        prefix = None
     for kind, field in EXISTING_FIELDS.items():
         value = str(config.get(field, ""))
-        # Objects the setup script creates must be clearly lab-owned; existing ones keep their names.
-        if kind not in existing and not value.startswith("HOL_"):
-            errors.append(f"{field} must start HOL_ (or list it in existing_objects)")
+        # Objects the setup script creates must carry the lab prefix so cleanup can't touch anything else;
+        # existing objects keep their names and are never dropped.
+        if prefix and kind not in existing and not value.startswith(prefix):
+            errors.append(f"{field} must start {prefix} (or list it in existing_objects)")
         if value in RESERVED_NAMES.get(kind, set()):
             errors.append(f"{field} must not be the system/admin object {value}")
     if config.get("participant_schema") in {"SOURCE", "PUBLIC", "INFORMATION_SCHEMA"}:

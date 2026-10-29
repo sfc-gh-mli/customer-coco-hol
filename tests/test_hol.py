@@ -102,6 +102,29 @@ class PackageTests(unittest.TestCase):
     def package(self, config=None, name="package", mode="archive"):
         return assemble(config or BASE, UPSTREAM, self.parent / name, mode)
 
+    def test_customer_prefix_and_exact_cleanup(self):
+        config = {**BASE, "track": "machine-learning", "interface": "snowsight", "object_prefix": "SBX_DE_",
+                  "sandbox_database": "SBX_DE_HOL", "warehouse": "COMPUTE_WH", "participant_role": "SBX_DE_P001",
+                  "existing_objects": ["warehouse"], "event": {"participants": 3}}
+        self.assertEqual(config_errors(config), [])
+        self.assertTrue(config_errors({**config, "sandbox_database": "HOL_LAB"}))  # new object, wrong prefix
+        for bad in ("", "X_", "sbx_", "SBX", "SNOWFLAKE_"):
+            self.assertTrue(config_errors({**config, "object_prefix": bad}), bad)
+        path = self.package(config, name="prefixed")
+        self.assertEqual(validate_package(path)["errors"], [])
+        setup = (path / REPO / "admin/setup.sql").read_text()
+        cleanup = setup[setup.rindex("\n", 0, setup.index("SECTION 8")) + 1:]
+        drops = re.findall(r"^-- (DROP \w+(?: \w+)? [A-Z0-9_.]+);", cleanup, re.MULTILINE)
+        self.assertEqual(drops, ["DROP COMPUTE POOL SBX_DE_NOTEBOOK_POOL", "DROP DATABASE SBX_DE_HOL",
+                                 "DROP ROLE SBX_DE_P001", "DROP ROLE SBX_DE_P002", "DROP ROLE SBX_DE_P003"])
+        self.assertIn("SHOW WAREHOUSES LIKE 'SBX_DE_%'", cleanup)
+        self.assertIn("COMPUTE_WH is an existing warehouse: not dropped.", cleanup)
+        self.assertIn("CREATE COMPUTE POOL SBX_DE_NOTEBOOK_POOL", setup)
+        for line in cleanup.splitlines():  # every DROP names a prefixed object; nothing executable
+            self.assertTrue(line.startswith("--") or not line.strip(), line)
+            if "DROP " in line and "DROP SCHEMA" not in line:
+                self.assertRegex(line, r"DROP [A-Z ]+ SBX_DE_")
+
     def test_existing_customer_objects(self):
         config = {**BASE, "sandbox_database": "ANALYTICS_SANDBOX", "warehouse": "COMPUTE_WH",
                   "participant_role": "DATA_ENGINEER", "existing_objects": ["database", "warehouse", "role"]}

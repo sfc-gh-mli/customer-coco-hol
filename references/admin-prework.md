@@ -7,7 +7,7 @@ The files under `assets/admin/` are templates, not permission to execute. Render
 
 ## Ordered setup pack
 1. `00_preflight.sql`: current account/user/role and proposed inventory; compare with the approved customer/trial account. Metadata reads do not prove feature readiness.
-2. `01_setup.sql`: new `HOL_*` database, SOURCE schema, small auto-suspending warehouse, typed source tables, internal stage and CSV format. Admin owns the source objects.
+2. `01_setup.sql`: new database named with the customer's `object_prefix` (default `HOL_`), SOURCE schema, small auto-suspending warehouse, typed source tables, internal stage and CSV format. Admin owns the source objects.
 3. Upload unzipped CSVs through Snowsight into `<DB>.SOURCE.HOL_DATA`. Upload exact filenames from the checksum manifest. No external stage, arbitrary URL or public file host is needed.
 4. `02_load.sql`: explicit columns, exact files, `ON_ERROR='ABORT_STATEMENT'`, no forced reload. Reconcile row counts and sums with the generated manifest. Changed filenames/content require a reviewed reload plan to avoid duplicate rows.
 5. `03_participant.sql`: one new role/schema per participant; grant only usage, source SELECT and selected create privileges. Bind roles to existing users in a private admin-only roster script; do not create passwords or publish usernames. A shared participant role is not isolation.

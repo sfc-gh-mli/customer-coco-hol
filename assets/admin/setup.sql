@@ -57,8 +57,7 @@ SELECT SUM(IFF(STATUS = 'COMPLETED', AMOUNT, 0)) AS NET_SPEND FROM {{DB}}.SOURCE
 
 -- ---------------------------------------------------------------------------
 -- SECTION 5: Participant role and writable schema.
--- Repeat this section once per participant with a new schema/role pair
--- (P002 / {{ROLE_PREFIX}}P002, ...). One shared role is NOT isolation.
+{{SECTION5_NOTE}}
 -- ---------------------------------------------------------------------------
 {{CREATE_ROLE}}
 CREATE SCHEMA {{DB}}.{{SCHEMA}};
