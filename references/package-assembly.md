@@ -37,7 +37,7 @@ The repo slug comes from `public.github_repo`, or else from the public title. `a
 
 ## Assembly details
 - The helper extracts only the five named prompt and completion helpers from the inspected upstream `components.py` and records source hashes.
-- The seven-step schedule and prompt text are parsed from the selected track reference, so the agenda, app pages, deck and progress IDs stay consistent.
+- The eight-step schedule (Plan, then Run the plan, then the track exercises) and prompt text are parsed from the selected track reference, so the agenda, app pages, deck and progress IDs stay consistent.
 - Each exercise page follows the session layout from the earlier coco-de-hol-ci-financial lab:
   - header;
   - **Technologies used in this session** cards;

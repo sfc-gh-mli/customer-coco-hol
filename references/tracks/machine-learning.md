@@ -10,13 +10,14 @@ Each step ends with tagged participant content that the app renders: `@tech Name
 ## Schedule (60 minutes)
 | ID | Minutes | Activity | Mode |
 |---|---:|---|---|
-| ml-01 | 8 | Intro, readiness, Plan | guided |
-| ml-02 | 8 | Custom ML-conventions skill | hands-on |
-| ml-03 | 8 | Inspect data and point-in-time features | hands-on |
-| ml-04 | 14 | Train and evaluate regression | hands-on |
-| ml-05 | 9 | Registry and warehouse batch inference | hands-on |
-| ml-06 | 8 | Monitoring setup and UI | guided/demo |
-| ml-07 | 5 | Recap and optional SPCS path | discussion |
+| ml-01 | 6 | Intro, readiness, Plan | guided |
+| ml-02 | 6 | Run the plan: data readiness | hands-on |
+| ml-03 | 7 | Custom ML-conventions skill | hands-on |
+| ml-04 | 8 | Inspect data and point-in-time features | hands-on |
+| ml-05 | 12 | Train and evaluate regression | hands-on |
+| ml-06 | 9 | Registry and warehouse batch inference | hands-on |
+| ml-07 | 7 | Monitoring setup and UI | guided/demo |
+| ml-08 | 5 | Recap and optional SPCS path | discussion |
 
 ## Dataset and evaluation contract
 Generate approximately 500–1,000 customers and 50,000–100,000 transactions over at least 18 months, with an explicit fixed seed and historical end date. Size can be reduced after timing a rehearsal. Match category/channel terminology to the industry without changing the target.
@@ -29,9 +30,9 @@ For every customer snapshot at cutoff T:
 - Fit preprocessing only on training data. IDs, future outcomes, and target-window aggregates cannot be predictors.
 - Preserve a final holdout; do not choose hyperparameters using the final holdout.
 
-Supply a small baseline model and the completed training checkpoint (a starter file on ml-04: `ml_training_checkpoint.ipynb` in Snowsight, `ml_training_checkpoint.py` in Desktop/CLI). Do not promise a particular model quality or training duration. Historical monitoring data contains actual batch predictions from the selected registered version plus simulated observed outcomes, not random values presented as model predictions.
+Supply a small baseline model and the completed training checkpoint (a starter file on ml-05: `ml_training_checkpoint.ipynb` in Snowsight, `ml_training_checkpoint.py` in Desktop/CLI). Do not promise a particular model quality or training duration. Historical monitoring data contains actual batch predictions from the selected registered version plus simulated observed outcomes, not random values presented as model predictions.
 
-### ml-01: Plan (8 minutes)
+### ml-01: Plan (6 minutes)
 > Plan only: predict each customer's net spend during the next 90 days using synthetic transactions in <DB>.SOURCE. Writes must stay in <DB>.<PARTICIPANT_SCHEMA> using <WH>. Build everything in <ML_WORKSPACE> named <ML_FILE>. Explain temporal feature/label boundaries, evaluation, registration, batch inference, and monitoring. Do not execute or provision compute.
 
 Expected/check: plan explicitly separates train/evaluation/scoring windows and excludes future features. Recovery: prepared plan.
@@ -44,7 +45,21 @@ Expected/check: plan explicitly separates train/evaluation/scoring windows and e
 @concept Plan mode | The agent proposes; you approve. Nothing runs until you do.
 @built A reviewed modeling plan with explicit time boundaries
 
-### ml-02: Team skill (8 minutes)
+### ml-02: Run the plan (6 minutes)
+> Approve the plan and run its first stage only. Create <ML_FILE> as <ML_WORKSPACE>, then add and run a data-readiness step: row counts for CUSTOMERS and TRANSACTIONS in <DB>.SOURCE, the transaction date range, the share of COMPLETED transactions, and the latest cutoff whose 90-day label window is fully observed. Don't train anything or create tables yet.
+
+Expected/check: <ML_FILE> exists and runs; counts match the README; the latest usable cutoff is at least 90 days before the data ends. In Snowsight, the notebook connects to the HOL compute pool. Recovery: open the training checkpoint (ml-05) and run its first cell to see the same counts.
+
+@tech Approvals | task_alt | You approve each step before it runs, so execution follows the plan you reviewed
+@tech <ML_FILE> | code | The notebook or script that holds every step of today's model, built up one stage at a time
+@situation Your plan is approved. Before any feature engineering, run its first stage to confirm the data can support a fair 90-day evaluation.
+@tip Ask the agent to print the dates it found, not just say "data looks fine". The latest usable cutoff decides your whole split.
+@warn Stop the agent if it starts training or creating tables. This stage only reads.
+@concept Plan, then execute | Approving a plan doesn't run anything; each stage runs separately and is shown for approval.
+@concept Fully observed label | A cutoff is usable only if its next 90 days are all inside the data.
+@built <ML_FILE> with a data-readiness check that matches the source
+
+### ml-03: Team skill (7 minutes)
 > Use the bundled machine-learning guidance for product APIs. Create a skill named hol-ml-review that adds only our team's gates:
 > 1. Fixed seed, recorded dataset dates and version.
 > 2. Features come before the snapshot cutoff; labels cover the following 90 days and must be fully observed.
@@ -66,8 +81,8 @@ Expected/check: custom skill adds team-specific gates without copying the whole 
 @concept Team gates | Checks the skill enforces before training: seed, temporal holdout, metric choice.
 @built A hol-ml-review skill with your team's modeling gates
 
-### ml-03: Inspect and engineer (8 minutes)
-> Create <ML_FILE> as <ML_WORKSPACE>, then add a step that inspects the prepared dataset's schema and counts. Show three customer snapshots with feature cutoff and label-end timestamps. Confirm no predictor uses transactions from its label window, and that the evaluation window is fully observed. Create the approved small feature dataset only in my sandbox schema.
+### ml-04: Inspect and engineer (8 minutes)
+> In <ML_FILE>, add a step that inspects the prepared dataset's schema and counts. Show three customer snapshots with feature cutoff and label-end timestamps. Confirm no predictor uses transactions from its label window, and that the evaluation window is fully observed. Create the approved small feature dataset only in my sandbox schema.
 
 Expected/check: data window checks, explicit feature list, zero-spend outcomes retained, no leakage. Recovery: precomputed feature checkpoint with the same documented boundaries.
 
@@ -80,7 +95,7 @@ Expected/check: data window checks, explicit feature list, zero-spend outcomes r
 @concept Leakage | Any predictor that uses information from the label window.
 @built A leakage-checked feature dataset in your sandbox schema
 
-### ml-04: Train (14 minutes)
+### ml-05: Train (12 minutes)
 > In <ML_FILE>, train a small regression baseline and one candidate using the approved temporal split. Use fixed random seeds and bounded model size. Evaluate MAE and RMSE, show the comparison against the baseline, and explain errors. Do not tune on the final holdout or create new compute; use only the compute the admin provided.
 
 Expected/check: actual metrics, training/evaluation row counts and dates, no train/holdout overlap. Recovery: use the rehearsed model artifact, clearly label it prepared and retain its version and evaluation record. In Snowsight, confirm the notebook is connected to the HOL compute pool before running cells, and run cells one at a time. Recovery file: the training checkpoint on this step page; open it in place of <ML_FILE> and run it top to bottom.
@@ -95,7 +110,7 @@ Expected/check: actual metrics, training/evaluation row counts and dates, no tra
 @concept MAE vs. RMSE | MAE is the typical error in dollars; RMSE punishes large misses more.
 @built A trained candidate model with honest held-out metrics
 
-### ml-05: Register and predict (9 minutes)
+### ml-06: Register and predict (9 minutes)
 > In <ML_FILE>, register the selected model in <DB>.<PARTICIPANT_SCHEMA> with evaluation metrics, data seed/date range, feature signature, and intended WAREHOUSE target. Run batch predictions through the registered version on a small scoring cohort. Save IDs, snapshot timestamps, model/version, features, and predictions in a sandbox table.
 
 Expected/check: model is visible in the Registry, metric metadata matches evaluated results, warehouse inference succeeds, output cardinality and finite predictions are checked. Recovery: run the prepared registered version; never report a locally computed prediction as warehouse inference.
@@ -108,7 +123,7 @@ Expected/check: model is visible in the Registry, metric metadata matches evalua
 @concept Batch inference | Scoring a table of customers through the registered version on a warehouse.
 @built A registered model version and a sandbox table of predictions
 
-### ml-06: Monitor (8 minutes)
+### ml-07: Monitor (7 minutes)
 > Configure a model-version monitor for the registered regression version using our historical scoring table and baseline. Include prediction and actual numeric score columns and TIMESTAMP_NTZ event times. Inspect the current drift and MAE/RMSE metrics, compare to the approved numeric thresholds, and summarize breached/not breached/insufficient data. Show the monitor in Snowsight.
 
 Prepare during T-3: baseline and shifted historical cohorts spanning multiple days, fully observed labels, an actual model monitor and populated UI. Example teaching thresholds are PSI > 0.20 and MAE > 1.20 times baseline MAE; label them illustrative, define columns/time windows, and compute real values. If baseline MAE is zero, do not divide by zero: use an approved absolute threshold or mark comparison undefined.
@@ -124,7 +139,7 @@ Current model-version monitors require daily aggregation and valid numeric predi
 @concept Performance monitoring | Comparing predictions to actual outcomes once they arrive (MAE, RMSE).
 @built A model monitor reviewed in the Snowsight UI
 
-### ml-07: Recap (5 minutes)
+### ml-08: Recap (5 minutes)
 Review skill, temporal correctness, registry, inference, and monitoring. Optional follow-on: approved SPCS compute pool, supported model target, authenticated REST endpoint, small bounded request set, p50/p95/p99 measured latency including warm/cold distinctions, and explicit teardown. Never enable a public endpoint or provision SPCS merely for a slide.
 
 @tech Recap | flag | Skills, temporal correctness, registry, inference and monitoring

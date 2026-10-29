@@ -8,18 +8,19 @@ Each step ends with tagged participant content that the app renders: `@tech Name
 ## Schedule (60 minutes)
 | ID | Minutes | Activity | Mode |
 |---|---:|---|---|
-| de-01 | 8 | Introduction, sandbox readiness, Plan | guided |
-| de-02 | 7 | AGENTS.md context | hands-on |
-| de-03 | 15 | Custom deployment-review skill and resources | hands-on |
-| de-04 | 10 | Review and fix a transformation | hands-on |
-| de-05 | 8 | Plugin and lifecycle-hook demonstration | demo |
-| de-06 | 7 | Autonomous read-only reviewer subagent | demo |
-| de-07 | 5 | Recap, questions, next steps | discussion |
+| de-01 | 6 | Introduction, sandbox readiness, Plan | guided |
+| de-02 | 6 | Run the plan and check the result | hands-on |
+| de-03 | 7 | AGENTS.md context | hands-on |
+| de-04 | 12 | Custom deployment-review skill and resources | hands-on |
+| de-05 | 10 | Review and fix a transformation | hands-on |
+| de-06 | 7 | Plugin and lifecycle-hook demonstration | demo |
+| de-07 | 7 | Autonomous read-only reviewer subagent | demo |
+| de-08 | 5 | Recap, questions, next steps | discussion |
 
 ## Exercises
 Replace angle-bracket parameters with rendered, validated values in participant-facing prompts. Each prompt is one step; do not ask the model to complete the whole lab at once.
 
-### de-01: Plan (8 minutes)
+### de-01: Plan (6 minutes)
 Prompt:
 > Plan only. We are preparing a customer-spend transformation using synthetic data in <DB>.SOURCE. My writable schema is <DB>.<PARTICIPANT_SCHEMA> and warehouse is <WH>. Explain your steps, expected outputs, checks, and cost controls. Do not execute SQL or change permissions. Never use production objects.
 
@@ -35,7 +36,22 @@ Expected: a scoped plan naming the exact source and output objects, not a generi
 @concept Sandbox scope | Reads come from <DB>.SOURCE; writes go only to <DB>.<PARTICIPANT_SCHEMA>. RBAC enforces it; prompts reinforce it.
 @built A reviewed, scoped plan naming every source and output object
 
-### de-02: Project context (7 minutes)
+### de-02: Run the plan (6 minutes)
+Prompt:
+> Approve the plan and run only its first slice: create <DB>.<PARTICIPANT_SCHEMA>.CUSTOMER_SPEND with one row per customer and net spend from COMPLETED transactions only, reading <DB>.SOURCE and using <WH>. Show each SQL statement before it runs. Then reconcile: the row count equals the number of customers, and total net spend equals SUM(AMOUNT) for COMPLETED transactions in SOURCE. Report both numbers and stop.
+
+Expected: one table in the participant schema, created only after the participant approves the SQL; both reconciliation numbers match the README's expected values. Check: no writes outside the participant schema; the agent stopped after the check. Recovery: run the prepared CREATE TABLE and reconciliation queries from the facilitator copy.
+
+@tech Approvals | task_alt | You approve each SQL statement before it runs, so the plan you reviewed is the plan that executes
+@tech Snowflake SQL | database | The agent writes and runs the SQL in your sandbox schema on <WH>
+@situation The plan looks right. Now let the agent build the first piece, and prove it's correct before you build on it.
+@tip Approve one statement at a time and read each one. If the SQL doesn't match the plan, deny it and ask why.
+@warn If the agent tries to write anywhere but your schema, deny the call. Your role should block it anyway; the approval catches it first.
+@concept Plan, then execute | Approving a plan doesn't run anything; execution happens call by call, each one shown for approval.
+@concept Reconciliation | Check a result against an independent total before trusting it, here row count and net spend.
+@built A CUSTOMER_SPEND table in your schema that reconciles to the source
+
+### de-03: Project context (7 minutes)
 Prompt (the conventions are part of the prompt, so there is no file to hand out):
 > Create AGENTS.md in this project with the conventions below, then summarize the rules you'll follow. Show the diff before accepting it.
 >
@@ -60,7 +76,7 @@ Expected: small meaningful context file with exact business definitions and safe
 @concept Context vs. instructions | AGENTS.md shapes every request in the project; a prompt shapes just one.
 @built An AGENTS.md with your team's net-spend definition and sandbox rules
 
-### de-03: Custom skill (15 minutes)
+### de-04: Custom skill (12 minutes)
 Explain a skill as a reusable instruction directory: SKILL.md frontmatter triggers + workflow, optional resources/scripts/assets. Use bundled skills for product APIs and platform semantics; use custom skills for the team's requirements. A skill is not a trained model or an RBAC control.
 
 Prompt:
@@ -80,7 +96,7 @@ Prompt:
 >
 > resources/parameterization.md: Business dates are explicit parameters, not hidden literals or CURRENT_DATE. Bind values and validate identifiers; never interpolate display names or untrusted text into SQL. Credentials belong in approved secret management, never in code or reports.
 
-Expected: `SKILL.md` plus `resources/naming.md`, `performance.md`, and `parameterization.md`. Check: invoke the skill on transform_before.sql (step 4) and verify each resource was considered. Recovery: re-run the prompt in a fresh session, then modify one rule instead of writing from scratch.
+Expected: `SKILL.md` plus `resources/naming.md`, `performance.md`, and `parameterization.md`. Check: invoke the skill on transform_before.sql (step 5) and verify each resource was considered. Recovery: re-run the prompt in a fresh session, then modify one rule instead of writing from scratch.
 
 @tech Custom skill | extension | A reusable instruction folder (SKILL.md plus resources) that teaches the agent your team's process
 @tech Skill resources | folder_open | Separate files for naming, performance and parameterization rules, loaded only when needed
@@ -92,7 +108,7 @@ Expected: `SKILL.md` plus `resources/naming.md`, `performance.md`, and `paramete
 @concept Progressive disclosure | Resources load only when a step needs them, keeping the agent's context small and focused.
 @built A hol-deployment-review skill with three resource files
 
-### de-04: Review and fix (10 minutes)
+### de-05: Review and fix (10 minutes)
 Seed flawed code only in a clearly marked exercise file: SELECT *, inconsistent alias, hard-coded business cutoff, unused columns. It must still reference only synthetic SOURCE tables. Do not seed production writes or intentional expensive Cartesian joins.
 
 Prompt 1:
@@ -112,7 +128,7 @@ Expected: reviewed transformation with a reproducible cutoff and matching totals
 @concept Known-answer check | Comparing your output to totals computed independently from the source data.
 @built A corrected, parameterized transformation that matches the expected totals
 
-### de-05: Plugin and hook (8 minutes)
+### de-06: Plugin and hook (7 minutes)
 Explain packaging: plugin manifest + skills/resources + agent definitions + hooks travel together, unlike an unversioned collection of loose files. Use current plugin documentation and inspected DE guide, not guessed manifests.
 
 Prompt:
@@ -129,7 +145,7 @@ Expected: reviewed local package and visible blocked fixture. The supplied guard
 @concept PreToolUse hook | Receives the planned tool call; exit code 2 blocks it. Defense in depth on top of RBAC.
 @built (Demo) A local plugin with your skill and a fixture-tested guard hook
 
-### de-06: Subagent (7 minutes)
+### de-07: Subagent (7 minutes)
 Explain difference: a skill supplies instructions to the current conversation; a subagent has a focused separate context and task; a Cortex Agent is a different Snowflake product.
 
 Prompt:
@@ -149,7 +165,7 @@ Expected: bounded repeatable review and concise report. Check: tool allowlist re
 @concept Cortex Agent | A different Snowflake product: an agent you deploy for business users, not a Cortex Code helper.
 @built (Demo) A read-only review report from the hol-reviewer subagent
 
-### de-07: Recap (5 minutes)
+### de-08: Recap (5 minutes)
 Ask participants to identify one team convention worth encoding. Recap Plan, context, skills, plugin packaging, hooks, and subagents. Link optional CI/CD and deeper dbt validation, outside the hour. If dbt code is used, route through the available dbt verification workflow rather than treating successful compilation as correctness.
 
 @tech Recap | flag | Plan, context, skills, plugins, hooks and subagents

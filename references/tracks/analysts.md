@@ -8,18 +8,19 @@ Each step ends with tagged participant content that the app renders: `@tech Name
 ## Schedule (60 minutes)
 | ID | Minutes | Activity | Mode |
 |---|---:|---|---|
-| an-01 | 8 | Intro, readiness, Plan | guided |
-| an-02 | 8 | Custom reporting skill | hands-on |
-| an-03 | 11 | Query, HTML report, Snowflake Dashboard demo | hands-on/demo |
-| an-04 | 12 | Semantic view and known-answer tests | hands-on |
-| an-05 | 10 | Agent, optimization, CoWork tests | guided/demo |
-| an-06 | 6 | Email automation | demo |
-| an-07 | 5 | Recap and questions | discussion |
+| an-01 | 6 | Intro, readiness, Plan | guided |
+| an-02 | 6 | Run the plan: first question | hands-on |
+| an-03 | 7 | Custom reporting skill | hands-on |
+| an-04 | 10 | Query, HTML report, Snowflake Dashboard demo | hands-on/demo |
+| an-05 | 11 | Semantic view and known-answer tests | hands-on |
+| an-06 | 9 | Agent, optimization, CoWork tests | guided/demo |
+| an-07 | 6 | Email automation | demo |
+| an-08 | 5 | Recap and questions | discussion |
 
 ## Data and test design
 Use a compact star schema: customers/locations and transactions with explicit grain, identifiers, timestamps, amounts and status. Define net spend and reporting dates once, including canceled/refunded treatment. Generate known-answer totals and rankings from the actual CSVs, not from an LLM. Include a five-question test set with expected numeric values and tolerances: total net spend, top category, time trend, unique customers, and one ambiguous metric requiring clarification. Keep the final set stable for before/after comparison.
 
-### an-01: Plan (8 minutes)
+### an-01: Plan (6 minutes)
 > Plan only. Answer our three agreed business questions using synthetic data in <DB>.SOURCE. Create reports and AI objects only in <DB>.<PARTICIPANT_SCHEMA>. Explain the metric definitions, joins, date window, validation, and sharing approvals before execution. Do not email or publish anything.
 
 Expected/check: exact source FQNs, clear grain/metric/window, sandbox outputs, approval gates. Recovery: prepared plan and context.
@@ -32,7 +33,21 @@ Expected/check: exact source FQNs, clear grain/metric/window, sandbox outputs, a
 @concept Plan mode | The agent proposes; you review; nothing runs until you approve.
 @built A reviewed plan with exact metric definitions and sources
 
-### an-02: Custom report skill (8 minutes)
+### an-02: Run the plan (6 minutes)
+> Approve the plan and run it for the first business question only. Show each query before it runs, save the answer as a table in <DB>.<PARTICIPANT_SCHEMA>, and reconcile its total net spend against SUM(AMOUNT) for COMPLETED transactions in <DB>.SOURCE over the same date window. Show the SQL, the result and the reconciliation. Don't build reports or share anything yet.
+
+Expected/check: one answer table in the participant schema; the reconciliation matches; nothing published or sent. Recovery: run the prepared query for question one and compare totals.
+
+@tech Approvals | task_alt | You approve each query before it runs, so the numbers come from the plan you reviewed
+@tech Snowflake SQL | database | The agent writes and runs the queries in your sandbox schema
+@situation The metric definitions are agreed. Now answer the first question for real, and prove the number before anyone sees it.
+@tip If the reconciled total doesn't match, ask the agent to explain the gap before changing anything.
+@warn Deny any step that publishes, emails or shares. This step only answers and checks.
+@concept Plan, then execute | Approving a plan doesn't run anything; each query runs separately and is shown for approval.
+@concept Reconciliation | A result matches an independent total over the same window before you trust it.
+@built A reconciled answer to your first business question
+
+### an-03: Custom report skill (7 minutes)
 > Create a skill named hol-report with our report conventions:
 > 1. Plan the business question, source FQNs, date window and output before running anything.
 > 2. Read the data dictionary. In this simulated lab, net spend includes only COMPLETED transactions; don't generalize that to real accounting.
@@ -53,7 +68,7 @@ Expected/check: SKILL.md frontmatter, concise steps, on-demand resources if nece
 @concept Approval gates | Rules that stop for a human before sharing, emailing or publishing.
 @built A hol-report skill with your team's reporting rules
 
-### an-03: Report and dashboard (11 minutes)
+### an-04: Report and dashboard (10 minutes)
 > Use hol-report to query the approved sandbox tables for our agreed reporting period. Verify the joins and reconcile results with expected-results.json. Build a self-contained HTML report with headline metrics, trend and category charts, definitions, source FQNs and caveats. Save locally; do not publish.
 
 Expected/check: computed rather than invented results, no double counting, readable report, no external network dependencies. HTML generation must load HTML-authoring guidance. Facilitator then demonstrates the same validated SQL as tiles in a Snowflake Dashboard using the current Snowsight UI. Do not claim an HTML import creates a native Dashboard or invent dashboard SQL APIs. Recovery: prepared SQL and an actual previously tested dashboard, marked prepared; screenshots require provenance.
@@ -67,7 +82,7 @@ Expected/check: computed rather than invented results, no double counting, reada
 @concept Self-contained report | No external scripts or network calls, so it renders anywhere safely.
 @built A validated HTML report and a demo of the same SQL as dashboard tiles
 
-### an-04: Semantic view (12 minutes)
+### an-05: Semantic view (11 minutes)
 > Use the available semantic-view skill to create a small semantic view over the approved source tables. Encode grain, dimension keys, many-to-one relationships, metric definitions, and synonyms. Target <DB>.<PARTICIPANT_SCHEMA>. Validate and test the five prepared questions against the expected SQL results. Do not guess YAML or undocumented fields.
 
 Expected/check: real semantic object, successful validation, numeric reconciliations and join/grain checks. Reuse a starter definition to fit the timebox. Recovery: prepared view with the same source/metric contract.
@@ -80,7 +95,7 @@ Expected/check: real semantic object, successful validation, numeric reconciliat
 @concept Known-answer test | A question with an expected numeric result and tolerance, used before and after changes.
 @built A validated semantic view tested against five known answers
 
-### an-05: Agent, optimize, CoWork (10 minutes)
+### an-06: Agent, optimize, CoWork (9 minutes)
 > Use the available agent workflow to create a sandbox Cortex Agent using this semantic view. Run the fixed question set. Inspect one failure or ambiguity. Improve the semantic metric/synonym definition separately from the agent's tool-routing/clarification instructions, rerun the same tests, and show which results changed. Test the approved agent in Snowflake CoWork under the participant role.
 
 Expected/check: distinguish CoCo coding agent from the created Cortex Agent; record question, expected result, actual result, pass/fail/ambiguous, latency if measured, and source. Use a prepared, deliberately ambiguous business wording if all baseline answers pass; never manufacture a failure or claim uplift without evidence. CoWork listing/visibility and agent execution require preflight grants. If absent, label it blocked and use a rehearsed facilitator demonstration. Do not silently widen permissions or force objects into account-wide schemas.
@@ -95,7 +110,7 @@ Expected/check: distinguish CoCo coding agent from the created Cortex Agent; rec
 @concept Ambiguity | A question with more than one reasonable meaning; good agents ask instead of guessing.
 @built A sandbox Cortex Agent, tested and improved with evidence
 
-### an-06: Email automation (6 minutes)
+### an-07: Email automation (6 minutes)
 > Prepare a scheduled report from the approved query with the selected cadence and time zone. Show recipients, delivery mechanism, runtime location, permission scope and expected report before enabling. Keep it disabled until approved; do not send now.
 
 During rehearsal choose exactly one supported route:
@@ -115,7 +130,7 @@ Expected/check: configured vs enabled vs sent vs delivered are distinct states; 
 @concept Delivery route | A Snowflake task and notification, a cloud automation, or a local automation with a mail connector; each has different requirements.
 @built (Demo) A disabled, reviewed report schedule and a report preview
 
-### an-07: Recap (5 minutes)
+### an-08: Recap (5 minutes)
 Recap metric consistency, reuse, evaluation, CoWork, and controlled sharing. Provide optional deeper semantic/agent evaluation and production scheduling extensions.
 
 @tech Recap | flag | Consistent metrics, reusable skills, evaluation, CoWork and controlled sharing

@@ -69,8 +69,12 @@ class SkillTests(unittest.TestCase):
         for track in ("data-engineering", "machine-learning", "analysts"):
             steps = curriculum_from_reference(ROOT / f"references/tracks/{track}.md", {**BASE, "track": track})
             self.assertEqual(sum(step["minutes"] for step in steps), 60)
-            self.assertEqual(len(steps), 7)
+            self.assertEqual(len(steps), 8)
             self.assertIn("Plan", steps[0]["title"])
+            # Step 2 runs the approved plan: an execution prompt, not another plan.
+            self.assertIn("Run the plan", steps[1]["title"])
+            self.assertTrue(steps[1]["prompts"][0]["text"].startswith("Approve the plan and run"))
+            self.assertNotIn("<ML_", json.dumps(steps[1]))
             for step in steps:
                 self.assertTrue(step["technologies"] and step["situation"] and step["concepts"] and step["tips"], step["id"])
                 self.assertNotRegex(step["body"], r"(?m)^@\w+")
@@ -163,9 +167,9 @@ class PackageTests(unittest.TestCase):
             public = path / REPO
             self.assertEqual(validate_package(path)["errors"], [])
             steps = {step["id"]: step for step in json.loads((public / "app/curriculum.json").read_text())}
-            self.assertIn(f"ml_spend_model.{ext}", steps["ml-03"]["prompts"][0]["text"])
+            self.assertIn(f"ml_spend_model.{ext}", steps["ml-02"]["prompts"][0]["text"])
             self.assertNotIn("<ML_", json.dumps(steps))
-            (starter,) = json.loads((public / "app/starters.json").read_text())["ml-04"]
+            (starter,) = json.loads((public / "app/starters.json").read_text())["ml-05"]
             self.assertEqual(starter["path"], f"ml_training_checkpoint.{ext}")
             self.assertNotIn("{{", starter["content"])
             self.assertIn("HOL_EXAMPLE_20261026.P001.ML_FEATURE_SNAPSHOTS", starter["content"])

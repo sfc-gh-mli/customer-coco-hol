@@ -46,7 +46,7 @@ GRANT USAGE ON COMPUTE POOL {{POOL}} TO ROLE {{ROLE}};
 -- ALTER ACCOUNT SET NOTEBOOK_VNEXT_IDLE_TIMEOUT_OPTIONS_MINUTES = '60,30,120';
 -- Participant smoke test (Snowsight, as the participant role): create a Workspace notebook,
 -- connect it to {{POOL}} with a 60-minute idle timeout, and run ml_training_checkpoint.ipynb
--- from the lab app's ml-04 page top to bottom."""
+-- from the lab app's ml-05 page top to bottom."""
 def object_blocks(config: dict, tokens: dict) -> dict:
     """setup.sql blocks that create new lab objects or reuse the customer's existing ones."""
     existing = set(config.get("existing_objects", []))
@@ -121,12 +121,12 @@ INTERFACE_NOTES = {
 # prompts. Starters are embedded in the app (app/starters.json) on the step that uses them.
 STARTERS = {
     "data-engineering": {
-        "de-04": [("transform_before.sql", "transform_before.sql", "SQL to review"),
+        "de-05": [("transform_before.sql", "transform_before.sql", "SQL to review"),
                   ("transform_checkpoint.sql", "transform_checkpoint.sql", "Recovery checkpoint (answer key)")],
-        "de-05": [("guard_demo.py", "guard_demo.py", "Demo hook (facilitator)")],
+        "de-06": [("guard_demo.py", "guard_demo.py", "Demo hook (facilitator)")],
     },
     "machine-learning": {
-        "ml-04": [("ml_training_checkpoint.{ml_ext}", "ml_training_checkpoint.{ml_ext}",
+        "ml-05": [("ml_training_checkpoint.{ml_ext}", "ml_training_checkpoint.{ml_ext}",
                    "Training checkpoint (recovery)")],
     },
     "analysts": {},
