@@ -198,7 +198,7 @@ def assemble(config: dict, upstream: Path, output: Path, source_mode="archive") 
              "owner before the lab, then switches to the participant role." if config["account_mode"] == "trial" else "")
 
     # Public repo: guide app, single admin script, data zip; starter files live in app/starters.json.
-    lab = {"title": config["public"]["title"], "scenario": config["scenario"],
+    lab = {"title": config["public"]["title"], "scenario": config["scenario"], "outcome": config.get("outcome", ""),
            "track_label": TRACK_LABELS[config["track"]], "interface_label": INTERFACE_LABELS[config["interface"]],
            "database": tokens["DB"], "schema": tokens["SCHEMA"], "role": tokens["ROLE"], "warehouse": tokens["WH"],
            "zip": zip_name, "expected_text": expected_text,
@@ -253,6 +253,7 @@ def assemble(config: dict, upstream: Path, output: Path, source_mode="archive") 
                    }[config["track"]])}
     repo_url = config["public"].get("github_repo") or "https://github.com/<github-user>/" + repo.name
     guide_values = {"ORGANIZATION": config["organization"], "TITLE": config["public"]["title"],
+                    "OUTCOME": config.get("outcome") or "_Not set yet: agree it with the sponsor at T\u22127._",
                     "REPO_FOLDER": repo.name, "REPO_URL": repo_url,
                     "REPO_OWNER_NAME": repo_url.removeprefix("https://github.com/"),
                     "TRACK": lab["track_label"], "INTERFACE": lab["interface_label"]}

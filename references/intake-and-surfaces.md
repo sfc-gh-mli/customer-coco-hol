@@ -11,14 +11,18 @@ Round 1 (four questions):
 
 Round 2:
 1. Specific topics (text default `Use the selected track template`).
-2. Event logistics (date, time/time zone, participant count; default `TBD; 10 participants`).
-3. Sponsor/admin ownership and approved sandbox naming (no secrets).
-4. Output location, with a new organization/event-specific directory suggested.
+2. Outcome / end-user experience: what participants should walk away able to do, and how the hour should feel
+   (text default `Participants leave able to repeat one real workflow on their own data, with a clear next step`).
+   Save it as `outcome`; it appears on the app's Overview page and at the top of the facilitator guide, and shapes
+   each step's situation and the final Next steps discussion.
+3. Event logistics (date, time/time zone, participant count; default `TBD; 10 participants`).
+4. Sponsor/admin ownership and approved sandbox naming (no secrets).
 
 Round 3 — publishing (customer guide is delivered as a public GitHub repo + public Streamlit app):
 1. Facilitator's public GitHub account/org and repo URL (text default `https://github.com/<github-user>/<org-slug>-coco-hol`). Never ask for tokens or passwords.
 2. Public naming: may the customer's name appear in the public repo/app? Options: "Yes, customer approved" / "No, use a neutral title" (e.g. `Retail Cortex Code Lab`). Default No until the sponsor confirms; the real name then appears only in `facilitator/`.
 3. Hosting: Streamlit Community Cloud (default) or local-only for now.
+4. Output location, with a new organization/event-specific directory suggested.
 
 Salesforce, calendar access, trial signup links and email connectors are not prerequisites; ask only for an explicitly requested later action. Local generation can proceed before the GitHub repo exists; publishing waits for the answers above.
 
@@ -36,6 +40,7 @@ Use JSON. Allowed enums: `track`: `data-engineering`, `machine-learning`, `analy
   "interface": "desktop",
   "account_mode": "customer",
   "topics": [],
+  "outcome": "Participants leave able to repeat one real workflow on their own data, with a clear next step.",
   "event": {"date": null, "timezone": null, "participants": 10},
   "sandbox_database": "HOL_EXAMPLE_20261026",
   "warehouse": "HOL_EXAMPLE_WH",

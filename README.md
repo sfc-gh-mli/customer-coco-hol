@@ -19,13 +19,14 @@ Before generating anything, Cortex Code asks a few rounds of questions (up to fo
    - Interface participants will use: Cortex Code Desktop, CLI or Snowsight
 2. **The event**
    - Specific topics to cover (or the track's default agenda)
+   - The outcome and end-user experience you want: what participants should walk away able to do, and how the hour should feel
    - Date, time zone and participant count
    - Sponsor and Snowflake admin, and the approved sandbox names
-   - Where to save the generated lab
 3. **Publishing**
    - The GitHub account and repo for the participant guide
    - Whether the customer's name may appear publicly (default: no, use a neutral title like "Retail Cortex Code Lab")
    - Hosting: Streamlit Community Cloud, or local only for now
+   - Where to save the generated lab
 
 It then shows the lab design for your approval before building the package.
 
@@ -33,6 +34,8 @@ It then shows the lab design for your approval before building the package.
 - a **GitHub repo** with a Streamlit lab guide app, a single admin `setup.sql`, synthetic data and starter files;
 - **local facilitator materials**: an HTML intro deck and a T−7 / T−3 / T−1 preparation guide;
 - tracks for **Data Engineering**, **ML / Data Scientists** and **Analysts**, on Cortex Code Desktop, CLI or Snowsight.
+
+Every lab ends with a **Next steps** discussion: a short set of questions that gets participants thinking about which business problems these capabilities could solve for them, and what they'd need to try it on real work.
 
 **Note for COEs:** the built-in publish step creates a **public** GitHub repo (participants open the guide without signing in). If your company's policy doesn't allow that, choose "local only" hosting and share the generated folder internally instead.
 

@@ -23,7 +23,7 @@ BASE = {
     "schema_version": 1, "organization": "Example Retail", "industry": "retail",
     "scenario": "Use synthetic purchase activity to understand customer spend.",
     "track": "data-engineering", "interface": "desktop", "account_mode": "customer",
-    "topics": [], "event": {"date": None, "timezone": None, "participants": 10},
+    "topics": [], "outcome": "Participants leave able to repeat one real workflow on their own data.", "event": {"date": None, "timezone": None, "participants": 10},
     "sandbox_database": "HOL_EXAMPLE_20261026", "warehouse": "HOL_EXAMPLE_WH",
     "participant_schema": "P001", "participant_role": "HOL_EXAMPLE_P001",
     "data_seed": 42, "as_of_date": "2026-09-30", "duration_minutes": 60,
@@ -297,6 +297,7 @@ class PackageTests(unittest.TestCase):
             try:
                 app = AppTest.from_file(str(app_path), default_timeout=20).run()
                 self.assertFalse(app.exception, str(app.exception))
+                self.assertIn("walk away with", " ".join(block.value for block in app.markdown))
                 steps = json.loads((public / "app/curriculum.json").read_text())
                 starters = json.loads((public / "app/starters.json").read_text())
                 self.assertFalse((public / "exercises").exists())
@@ -318,6 +319,10 @@ class PackageTests(unittest.TestCase):
                             self.assertIn(section, text)
                         self.assertTrue(page.info or page.warning, f"{call}: no learning tips")
                         step = steps[calls.index(call) - 2]
+                        has_next = "Next steps: bring it to your business" in text
+                        self.assertEqual(has_next, step is steps[-1], call)
+                        if has_next:
+                            self.assertNotIn("<INDUSTRY>", text)
                         expected = starters.get(step["id"], [])
                         self.assertEqual(len(page.get("download_button")), len(expected), call)
                         self.assertEqual([block.value.strip() for block in page.code][:len(expected)],

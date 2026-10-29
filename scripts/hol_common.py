@@ -75,6 +75,8 @@ def config_errors(config: dict) -> list[str]:
         errors.append("Lab design must be approved before assembling")
     if config.get("schema_version") != 1:
         errors.append("Unsupported config schema_version")
+    if not isinstance(config.get("outcome", ""), str) or len(config.get("outcome", "")) > 400:
+        errors.append("outcome must be text up to 400 characters")
     public = config.get("public")
     if not isinstance(public, dict):
         errors.append("Missing public publishing settings")
@@ -135,7 +137,7 @@ def render_tokens(text: str, values: dict) -> str:
 
 def _session_content(body: str) -> tuple[str, dict]:
     """Split tagged participant content (@tech, @situation, ...) from the facilitator-facing body."""
-    content = {"technologies": [], "situation": "", "tips": [], "concepts": [], "built": []}
+    content = {"technologies": [], "situation": "", "tips": [], "concepts": [], "built": [], "discussion": []}
     kept = []
     for line in body.splitlines():
         tag, _, value = line.partition(" ")
@@ -152,6 +154,8 @@ def _session_content(body: str) -> tuple[str, dict]:
             content["concepts"].append({"term": term, "definition": definition})
         elif tag == "@built":
             content["built"].append(value)
+        elif tag == "@discuss":
+            content["discussion"].append(value)
         elif tag.startswith("@"):
             raise ValueError(f"Unknown session tag: {tag}")
         else:
@@ -185,6 +189,8 @@ def curriculum_from_reference(path: Path, config: dict) -> list[dict]:
                        "mode": mode.strip(), "body": body, **content,
                        "prompts": [{"id": f"{identifier}-p{index}", "text": prompt}
                                    for index, prompt in enumerate(prompts, 1)]})
+    if result and not result[-1]["discussion"]:
+        raise ValueError("The final step needs @discuss next-step questions")
     if not result or sum(step["minutes"] for step in result) != 60:
         raise ValueError("Track schedule must total 60 minutes")
     return result

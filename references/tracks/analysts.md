@@ -3,7 +3,7 @@
 ## Outcome
 Use Plan and a custom reporting skill to query industry-specific synthetic data, create HTML visualizations, demonstrate a Snowflake Dashboard, build a small semantic view and Cortex Agent, improve both using known-answer tests, test in Snowflake CoWork, and demonstrate a prepared email-report automation.
 
-Each step ends with tagged participant content that the app renders: `@tech Name | icon | description`, `@situation`, `@tip`, `@warn`, `@concept Term | definition`, `@built`. Placeholders `<INDUSTRY>`, `<DB>`, `<WH>` and `<PARTICIPANT_SCHEMA>` are rendered. Customize the situation per customer.
+Each step ends with tagged participant content that the app renders: `@tech Name | icon | description`, `@situation`, `@tip`, `@warn`, `@concept Term | definition`, `@built`, and `@discuss` (next-step business questions, required on the final step). Placeholders `<INDUSTRY>`, `<DB>`, `<WH>` and `<PARTICIPANT_SCHEMA>` are rendered. Customize the situation per customer.
 
 ## Schedule (60 minutes)
 | ID | Minutes | Activity | Mode |
@@ -123,6 +123,9 @@ Recap metric consistency, reuse, evaluation, CoWork, and controlled sharing. Pro
 @tip Start with the report that causes the most "why don't these numbers match?" emails.
 @concept Single source of truth | One semantic view and one skill, so every report and agent answer agrees.
 @built A shortlist of reports and metrics to standardize next
+@discuss Which recurring report or question takes your team the most time each week? Could a semantic view and agent answer it?
+@discuss Where do numbers disagree between teams today? Which metric definition would you encode first?
+@discuss Who would use an agent like today's in your <INDUSTRY> business, and what would they need to trust its answers?
 
 ## Preparation
 Preload data and starter semantic definitions, prepare known answers, confirm approved models, grant only required semantic/agent permissions, verify agent visibility in CoWork, and pre-authenticate an approved delivery path. Two participants must not overwrite each other's objects. Capture evidence of tests in the validation report.

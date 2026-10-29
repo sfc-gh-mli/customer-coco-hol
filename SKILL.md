@@ -10,7 +10,7 @@ Generate a complete workshop package, not just an outline. One event has one per
 ## Workflow
 
 ### 1. Resume or collect inputs
-Read an existing `.build/lab-config.json` and `.build/generation-manifest.json` before asking again. Load [intake and surfaces](references/intake-and-surfaces.md). Ask missing questions with the runtime's question tool, at most four per call. Do not ask for secrets. Confirm organization/industry, track, account mode, interface, optional topics, and the publishing round (facilitator's public GitHub repo, whether the customer name may appear publicly, hosting choice) before generation.
+Read an existing `.build/lab-config.json` and `.build/generation-manifest.json` before asking again. Load [intake and surfaces](references/intake-and-surfaces.md). Ask missing questions with the runtime's question tool, at most four per call. Do not ask for secrets. Confirm organization/industry, track, account mode, interface, optional topics, the target outcome / end-user experience, and the publishing round (facilitator's public GitHub repo, whether the customer name may appear publicly, hosting choice) before generation.
 
 Distinguish the facilitator's local generation environment from the participant interface. This skill generates files; it does not provision accounts by default.
 

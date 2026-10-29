@@ -3,7 +3,7 @@
 ## Outcome and data
 Participants use Plan and AGENTS.md, create a custom deployment-review skill, and apply it to a transformation. Facilitator demonstrates plugin packaging, a lifecycle hook, and a read-only review subagent. Use industry-specific CUSTOMERS, TRANSACTIONS, and LOCATIONS (or equivalent dimensions/facts); stage uploads and table creation are admin prework.
 
-Each step ends with tagged participant content that the app renders: `@tech Name | icon | description`, `@situation`, `@tip`, `@warn`, `@concept Term | definition`, `@built`. Placeholders `<INDUSTRY>`, `<DB>`, `<WH>` and `<PARTICIPANT_SCHEMA>` are rendered. Customize the situation per customer.
+Each step ends with tagged participant content that the app renders: `@tech Name | icon | description`, `@situation`, `@tip`, `@warn`, `@concept Term | definition`, `@built`, and `@discuss` (next-step business questions, required on the final step). Placeholders `<INDUSTRY>`, `<DB>`, `<WH>` and `<PARTICIPANT_SCHEMA>` are rendered. Customize the situation per customer.
 
 ## Schedule (60 minutes)
 | ID | Minutes | Activity | Mode |
@@ -157,6 +157,9 @@ Ask participants to identify one team convention worth encoding. Recap Plan, con
 @tip Start small: the rule your team argues about most often makes a great first skill resource.
 @concept Encode, don't repeat | If you explain a rule to the agent twice, it belongs in AGENTS.md or a skill.
 @built A shortlist of conventions to encode next
+@discuss Which pipeline or transformation does your team rebuild or re-review most often? What would a review skill for it check?
+@discuss Where do production incidents start today (naming, missing parameters, unreviewed SQL)? Which hook or subagent would have caught it?
+@discuss What would you need (owners, approvals, CI/CD) to run one of today's patterns on a real <INDUSTRY> workload next month?
 
 ## Instructor preparation
 Use [DE guide](https://www.snowflake.com/en/developers/guides/data-engineering-with-coco/) and [repository](https://github.com/Snowflake-Labs/sfguide-data-engineering-with-coco). Preserve the repository's license if copying code. Prepare all starter files, a known-good transformation, tested hook payloads, and a custom-subagent availability check. Record version-specific package conventions in the generated runbook.

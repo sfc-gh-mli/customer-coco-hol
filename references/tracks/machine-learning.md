@@ -5,7 +5,7 @@ Train a small regression model for customer total spend over the next 90 days, r
 
 Use the supplied [ML best practices](https://www.snowflake.com/en/developers/guides/agentic-machine-learning-best-practices-coco/) and [first model guide](https://www.snowflake.com/en/developers/guides/build-your-first-ml-model-in-snowflake-with-agentic-ml/). Read current [ML Observability](https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-registry/model-observability) and [CREATE MODEL MONITOR](https://docs.snowflake.com/en/sql-reference/sql/create-model-monitor) rather than the obsolete `model-monitor` documentation URL.
 
-Each step ends with tagged participant content that the app renders: `@tech Name | icon | description`, `@situation`, `@tip`, `@warn`, `@concept Term | definition`, `@built`. Placeholders `<INDUSTRY>`, `<DB>`, `<WH>` and `<PARTICIPANT_SCHEMA>` are rendered. `<ML_WORKSPACE>` and `<ML_FILE>` follow the interface: in Snowsight the work is a Workspace notebook (`ml_spend_model.ipynb`) on the admin's HOL compute pool; in Desktop/CLI it is a Python script (`ml_spend_model.py`). Customize the situation per customer.
+Each step ends with tagged participant content that the app renders: `@tech Name | icon | description`, `@situation`, `@tip`, `@warn`, `@concept Term | definition`, `@built`, and `@discuss` (next-step business questions, required on the final step). Placeholders `<INDUSTRY>`, `<DB>`, `<WH>` and `<PARTICIPANT_SCHEMA>` are rendered. `<ML_WORKSPACE>` and `<ML_FILE>` follow the interface: in Snowsight the work is a Workspace notebook (`ml_spend_model.ipynb`) on the admin's HOL compute pool; in Desktop/CLI it is a Python script (`ml_spend_model.py`). Customize the situation per customer.
 
 ## Schedule (60 minutes)
 | ID | Minutes | Activity | Mode |
@@ -132,6 +132,9 @@ Review skill, temporal correctness, registry, inference, and monitoring. Optiona
 @tip Real-time serving (SPCS) is worth it only when batch scoring can't meet the need. Measure latency before promising it.
 @concept SPCS endpoint | An optional, authenticated REST service for low-latency predictions, provisioned and torn down deliberately.
 @built A path from today's batch model to optional real-time serving
+@discuss Which prediction would change a real decision in your business (churn, demand, spend, risk)? Who would act on it?
+@discuss Where does model work stall today: data prep, leakage reviews, registration, or monitoring? Which step from today removes that bottleneck?
+@discuss What data and approvals would you need to rerun this lab on a real <INDUSTRY> use case, and who owns them?
 
 ## Rehearsal exit criteria
 The customer admin verifies CREATE MODEL and CREATE MODEL MONITOR plus source/model/warehouse access and package/runtime support. For Snowsight, a participant also creates a Workspace notebook, connects it to the HOL compute pool, and runs the training checkpoint end to end; record how long the first connection takes, because that wait happens on the day too. Train/register/infer once as the participant role. Inspect real monitor UI data in the approved sandbox. No trial compatibility or 60-minute performance claim is valid until tested for the chosen account/runtime.

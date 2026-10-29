@@ -24,6 +24,9 @@ components.SESSION_PROMPTS = {
 def overview():
     st.title(LAB["title"])
     st.write(LAB["scenario"])
+    if LAB.get("outcome"):
+        with st.container(border=True):
+            st.markdown(f"**What you'll walk away with**  \n{LAB['outcome']}")
     st.caption(f"{LAB['track_label']} | Cortex Code {LAB['interface_label']} | 60 minutes")
     st.info("All data is synthetic. Read from the shared SOURCE schema; build only in your assigned schema. "
             "Work in this order: Plan, review, approve, execute, validate.")
@@ -92,6 +95,13 @@ def exercise(step):
     if step["built"]:
         st.space("small")
         components.render_what_you_built(step["built"])
+    if step.get("discussion"):
+        st.space("small")
+        st.markdown("#### :material/forum: Next steps: bring it to your business")
+        st.info("Discuss with your team before you leave: where could these capabilities solve a real problem for you?",
+                icon=":material/lightbulb:")
+        with st.container(border=True):
+            st.markdown("\n".join(f"- {question}" for question in step["discussion"]))
 
 
 pages = {"Start here": [st.Page(overview, title="Overview", icon=":material/home:"),

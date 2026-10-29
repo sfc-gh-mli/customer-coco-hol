@@ -2,6 +2,8 @@
 
 Customer: **{{ORGANIZATION}}** · Track: **{{TRACK}}** · Interface: Cortex Code **{{INTERFACE}}** · 60 minutes
 
+**Target outcome / participant experience:** {{OUTCOME}}
+
 This folder stays on your machine. Only `{{REPO_FOLDER}}/` is published.
 
 | What | Where | Who uses it |
@@ -14,7 +16,8 @@ This folder stays on your machine. Only `{{REPO_FOLDER}}/` is published.
 ## 1. Preparation checklist
 
 ### T−7 days: meet the customer sponsor and Snowflake admin
-- [ ] Confirm track, interface, account mode (customer account or trials), participant count, outcomes and any extra topics.
+- [ ] Confirm track, interface, account mode (customer account or trials), participant count and any extra topics.
+- [ ] Agree the outcome: what participants should walk away able to do, and what the experience should feel like.
 - [ ] Confirm whether the customer's name may appear publicly (repo and app are public).
 - [ ] Send the admin the repo link. They run `admin/setup.sql` one section at a time and upload the data zip.
 - [ ] Admin repeats Section 5 per participant (one schema and role each) and keeps the user roster private.
