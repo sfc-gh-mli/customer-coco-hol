@@ -18,13 +18,13 @@ Round 2:
 3. Participant count (default `10`; sizes per-participant schemas/roles and the ML Snowsight compute pool). Don't ask for the event date or time zone.
 4. Snowflake objects (customer account only; skip for trials): the **prefix** for new lab objects, and the
    participant **role**, **database** and **warehouse** to use, noting which already exist. Text default
-   `prefix HOL_; role HOL_<ORG>_P001 (new), database HOL_<ORG>_<YYYYMMDD> (new), warehouse HOL_<ORG>_WH (new)`;
+   `prefix HOL_; role HOL_<ORG>_PARTICIPANT (new), database HOL_<ORG>_<YYYYMMDD> (new), warehouse HOL_<ORG>_WH (new)`;
    the customer swaps in their own prefix (e.g. `SBX_DE_`) and marks any existing object `(existing)`.
    Save `object_prefix`, `participant_role`, `sandbox_database`, `warehouse`, and list reused ones in
    `existing_objects`. Every new object must start with the prefix (3-32 uppercase characters ending in `_`, not
    starting `SNOWFLAKE`); trials use `HOL_`. Never accept ACCOUNTADMIN/SECURITYADMIN/SYSADMIN/USERADMIN/ORGADMIN/PUBLIC as the
-   participant role, or SNOWFLAKE/SNOWFLAKE_SAMPLE_DATA as the database. Warn that one existing role shared by all
-   participants means they can see each other's schemas. Sponsor and admin owners are recorded in the facilitator
+   participant role, or SNOWFLAKE/SNOWFLAKE_SAMPLE_DATA as the database. All participants share this one role and
+   each gets their own schema; the shared role can see every participant schema, so isolation is by convention. Sponsor and admin owners are recorded in the facilitator
    guide, not asked here.
 
 Round 3 — publishing (customer guide is delivered as a public GitHub repo + public Streamlit app):

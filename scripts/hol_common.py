@@ -52,7 +52,7 @@ def object_prefix(config: dict) -> str:
 
 
 def created_objects(config: dict) -> dict:
-    """Exact names of every object setup.sql creates (Section 5 repeated per participant).
+    """Exact names of every object setup.sql creates: one shared role, one schema per participant.
 
     Cleanup is generated from this list only, so it can never name an existing customer object.
     """
@@ -61,12 +61,7 @@ def created_objects(config: dict) -> dict:
     schema, role = config["participant_schema"], config["participant_role"]
     numbered = re.fullmatch(r"P(\d{3})", schema) and int(schema[1:]) == 1
     schemas = [f"P{n:03d}" for n in range(1, count + 1)] if numbered else [schema]
-    if "role" in existing:
-        roles = []
-    elif numbered and role.endswith(schema):
-        roles = [role.removesuffix(schema) + name for name in schemas]
-    else:
-        roles = [role]
+    roles = [] if "role" in existing else [role]  # one role shared by every participant
     prefix = object_prefix(config)
     pool = (config["warehouse"].removesuffix("_WH") if "warehouse" not in existing else prefix + "NOTEBOOK") + "_POOL"
     notebooks = config.get("track") == "machine-learning" and config.get("interface") == "snowsight"

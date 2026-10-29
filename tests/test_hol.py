@@ -116,7 +116,13 @@ class PackageTests(unittest.TestCase):
         cleanup = setup[setup.rindex("\n", 0, setup.index("SECTION 8")) + 1:]
         drops = re.findall(r"^-- (DROP \w+(?: \w+)? [A-Z0-9_.]+);", cleanup, re.MULTILINE)
         self.assertEqual(drops, ["DROP COMPUTE POOL SBX_DE_NOTEBOOK_POOL", "DROP DATABASE SBX_DE_HOL",
-                                 "DROP ROLE SBX_DE_P001", "DROP ROLE SBX_DE_P002", "DROP ROLE SBX_DE_P003"])
+                                 "DROP ROLE SBX_DE_P001"])
+        executable = "\n".join(line for line in setup.splitlines() if not line.lstrip().startswith("--"))
+        self.assertEqual(executable.count("CREATE ROLE "), 1)
+        for name in ("P001", "P002", "P003"):
+            self.assertIn(f"CREATE SCHEMA SBX_DE_HOL.{name};", executable)
+            self.assertIn(f"GRANT CREATE MODEL, CREATE MODEL MONITOR ON SCHEMA SBX_DE_HOL.{name} TO ROLE SBX_DE_P001;", executable)
+        self.assertNotIn("P004", executable)
         self.assertIn("SHOW WAREHOUSES LIKE 'SBX_DE_%'", cleanup)
         self.assertIn("COMPUTE_WH is an existing warehouse: not dropped.", cleanup)
         self.assertIn("CREATE COMPUTE POOL SBX_DE_NOTEBOOK_POOL", setup)

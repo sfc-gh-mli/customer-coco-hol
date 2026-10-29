@@ -26,7 +26,7 @@ Schedule and conduct this session three days before the lab; it does not consume
 | 10-20 | Admin load reconciliation; participant sample SELECT and sandbox write probe |
 | 20-30 | Plan mode, default approvals, skill discovery and a sample prompt |
 | 30-45 | Selected track end-to-end smoke test, including optional connector authentication if approved |
-| 45-55 | Run short demos; inspect actual reference outputs; test a second participant for collision/isolation |
+| 45-55 | Run short demos; inspect actual reference outputs; test a second participant working in their own schema with the shared role |
 | 55-60 | Assign blockers, owner and deadline; record go/no-go |
 
 DE: verify plugin/hook/subagent on facilitator's supported local surface; test deny fixtures without touching production. ML: train/register/warehouse-infer, seed historical scoring data and inspect a populated model monitor. Analysts: reconcile semantic tests, exercise the agent in CoWork, preview the report and verify an approved test-email route if selected.

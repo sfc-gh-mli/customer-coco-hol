@@ -51,6 +51,7 @@ def object_blocks(config: dict, tokens: dict) -> dict:
     """setup.sql blocks that create new lab objects or reuse the customer's existing ones."""
     existing = set(config.get("existing_objects", []))
     db, wh, role, schema = tokens["DB"], tokens["WH"], tokens["ROLE"], tokens["SCHEMA"]
+    participant = [name for name in created_objects(config)["schemas"] if name != "SOURCE"]
     new = [f"{kind} {name}" for kind, name in (("database", db), ("warehouse", wh), ("role", role))
            if kind not in existing]
     reused = [f"{kind} {name}" for kind, name in (("database", db), ("warehouse", wh), ("role", role))
@@ -63,8 +64,6 @@ def object_blocks(config: dict, tokens: dict) -> dict:
     if "database" in existing:
         preflight += [f"SHOW SCHEMAS IN DATABASE {db};",
                       f"-- STOP if {db} already has a SOURCE or {schema} schema: the lab creates both."]
-    if "role" in existing:
-        preflight.append(f"-- {role} is shared: every participant who uses it can see the others' schemas.")
     preflight.append("-- STOP: confirm the account" + (" and that the new names are unused." if new else "."))
     made = created_objects(config)
     prefix = object_prefix(config)
@@ -87,8 +86,6 @@ def object_blocks(config: dict, tokens: dict) -> dict:
     cleanup += [f"-- DROP ROLE {name};" for name in made["roles"]]
     if "role" in existing:
         cleanup.append(f"-- {role} is an existing role: not dropped; revoke the lab grants from it instead.")
-    if len(made["schemas"]) > 1 or len(made["roles"]) > 1:
-        cleanup.append("-- Lines above cover every participant from Section 5; delete any you didn't create.")
     return {
         "PREFLIGHT": "\n".join(preflight),
         "CREATE_DB": (f"-- Using existing database {db}." if "database" in existing
@@ -98,11 +95,13 @@ def object_blocks(config: dict, tokens: dict) -> dict:
                            "INITIALLY_SUSPENDED = TRUE;"),
         "CREATE_ROLE": (f"-- Using existing role {role}." if "role" in existing else f"CREATE ROLE {role};"),
         "CLEANUP_OBJECTS": "\n".join(cleanup),
-        "SECTION5_NOTE": (f"-- Repeat this section once per participant with a new schema (P002, ...).\n"
-                          f"-- All participants share the existing role {role}, so they can see each other's schemas."
-                          if "role" in existing else
-                          f"-- Repeat this section once per participant with a new schema/role pair\n"
-                          f"-- (P002 / {tokens['ROLE_PREFIX']}P002, ...). One shared role is NOT isolation."),
+        "SECTION5_NOTE": (f"-- Every participant uses the same role, {role}, and works in their own schema\n"
+                          f"-- ({', '.join(participant)}). The shared role can see and change every participant\n"
+                          f"-- schema, so ask participants to stay in their own."),
+        "PARTICIPANT_SCHEMAS": "\n".join(
+            f"CREATE SCHEMA {db}.{name};\n"
+            f"GRANT USAGE ON SCHEMA {db}.{name} TO ROLE {role};\n"
+            f"GRANT CREATE TABLE, CREATE VIEW ON SCHEMA {db}.{name} TO ROLE {role};" for name in participant),
     }
 
 
@@ -188,7 +187,7 @@ A 60-minute Cortex Code hands-on lab for **{lab['track_label']}**, using Cortex 
 1. Open [`admin/setup.sql`](admin/setup.sql) and run it **one section at a time** with an approved admin role.
 2. Section 3: unzip [`data/{lab['zip']}`](data/{lab['zip']}) and upload the CSVs to the `HOL_DATA` stage in Snowsight.
 3. Section 4 expected results: {expected_text}
-4. Section 5: repeat once per participant (one schema and role each). Keep the user roster private.
+4. Section 5: creates one shared participant role and one schema per participant; grant the role to each user. Keep the user roster private.
 5. Section 7: verify as a participant role, not as admin.
 6. Section 8 (cleanup) is commented out; run it only after the event with approval.
 
@@ -251,7 +250,13 @@ def assemble(config: dict, upstream: Path, output: Path, source_mode="archive") 
     notebooks = config["track"] == "machine-learning" and config["interface"] == "snowsight"
     tokens["POOL"] = created_objects(config)["pool"] or ""
     tokens["POOL_NODES"] = str(max(1, int(config["event"].get("participants") or 1)) + 1)
-    tokens["TRACK_GRANTS"] = render_tokens(TRACK_GRANTS[config["track"]] + (ML_NOTEBOOK_SETUP if notebooks else ""), tokens)
+    schemas = [name for name in created_objects(config)["schemas"] if name != "SOURCE"]
+    track_lines = []
+    for line in (TRACK_GRANTS[config["track"]] + (ML_NOTEBOOK_SETUP if notebooks else "")).splitlines():
+        # Schema-scoped grants apply to every participant schema, not just the first.
+        names = schemas if "{{SCHEMA}}" in line and not line.lstrip().startswith("--") else [tokens["SCHEMA"]]
+        track_lines += [render_tokens(line, {**tokens, "SCHEMA": name}) for name in names]
+    tokens["TRACK_GRANTS"] = "\n".join(track_lines)
     tokens.update(object_blocks(config, tokens))
     tokens["TRACK_CLEANUP"] = ""
     trial = ("\n- **Trial accounts:** each participant runs `admin/setup.sql` in their own trial as the account "

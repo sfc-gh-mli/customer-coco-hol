@@ -33,7 +33,8 @@ def overview():
     with st.container(border=True):
         st.markdown(f"**Your sandbox**  \nDatabase `{LAB['database']}` · schema `{LAB['schema']}` · "
                     f"role `{LAB['role']}` · warehouse `{LAB['warehouse']}`")
-        st.caption("Your facilitator may assign a different schema/role number (P001, P002, ...).")
+        st.caption("Everyone uses the same role. Your facilitator assigns your own schema (P001, P002, ...); "
+                   "use that schema in place of the one shown, and build only there.")
     st.subheader("Agenda")
     elapsed = 0
     for step in CURRICULUM:

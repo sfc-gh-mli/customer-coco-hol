@@ -60,16 +60,14 @@ SELECT SUM(IFF(STATUS = 'COMPLETED', AMOUNT, 0)) AS NET_SPEND FROM {{DB}}.SOURCE
 {{SECTION5_NOTE}}
 -- ---------------------------------------------------------------------------
 {{CREATE_ROLE}}
-CREATE SCHEMA {{DB}}.{{SCHEMA}};
 GRANT USAGE ON DATABASE {{DB}} TO ROLE {{ROLE}};
 GRANT USAGE ON SCHEMA {{DB}}.SOURCE TO ROLE {{ROLE}};
-GRANT USAGE ON SCHEMA {{DB}}.{{SCHEMA}} TO ROLE {{ROLE}};
 GRANT USAGE ON WAREHOUSE {{WH}} TO ROLE {{ROLE}};
 GRANT SELECT ON TABLE {{DB}}.SOURCE.LOCATIONS TO ROLE {{ROLE}};
 GRANT SELECT ON TABLE {{DB}}.SOURCE.CUSTOMERS TO ROLE {{ROLE}};
 GRANT SELECT ON TABLE {{DB}}.SOURCE.TRANSACTIONS TO ROLE {{ROLE}};
-GRANT CREATE TABLE, CREATE VIEW ON SCHEMA {{DB}}.{{SCHEMA}} TO ROLE {{ROLE}};
--- Assign to an existing user (keep the roster private, not in this repo):
+{{PARTICIPANT_SCHEMAS}}
+-- Grant the shared role to each participant's existing user (keep the roster private, not in this repo):
 -- GRANT ROLE {{ROLE}} TO USER <participant_user>;
 
 -- ---------------------------------------------------------------------------

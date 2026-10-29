@@ -20,7 +20,7 @@ This folder stays on your machine. Only `{{REPO_FOLDER}}/` is published.
 - [ ] Agree the outcome: what participants should walk away able to do, and what the experience should feel like.
 - [ ] Confirm whether the customer's name may appear publicly (repo and app are public).
 - [ ] Send the admin the repo link. They run `admin/setup.sql` one section at a time and upload the data zip.
-- [ ] Admin repeats Section 5 per participant (one schema and role each) and keeps the user roster private.
+- [ ] Admin runs Section 5 (one shared participant role, one schema per participant), grants the role to each participant's user, and keeps the user roster private.
 - [ ] ML track in Snowsight: admin creates the HOL compute pool in Section 6 (one node per participant, plus one spare) and confirms the account allows notebook workloads on it.
 - [ ] Book the T−3 enablement session.
 
@@ -31,7 +31,7 @@ This folder stays on your machine. Only `{{REPO_FOLDER}}/` is published.
 | 10–20 | Section 4 counts match the README; Section 7 participant write test passes |
 | 20–30 | Plan mode, default approvals, a sample prompt, skill discovery |
 | 30–45 | Track smoke test end to end. ML in Snowsight: the participant connects a Workspace notebook to the HOL compute pool and runs the training checkpoint; note the first-connect wait |
-| 45–55 | Your demos run; a second participant can't see the first participant's objects |
+| 45–55 | Your demos run; a second participant signs in with the shared role and works in their own schema (P002) |
 | 55–60 | Assign owners for blockers; go/no-go |
 
 ### T−1 day
