@@ -20,7 +20,7 @@ Before generating anything, Cortex Code asks a few rounds of questions (up to fo
 2. **The event**
    - Specific topics to cover (or the track's default agenda)
    - The outcome and end-user experience you want: what participants should walk away able to do, and how the hour should feel
-   - Date, time zone and participant count
+   - Participant count
    - Sponsor and Snowflake admin, and the approved sandbox names
 3. **Publishing**
    - The GitHub account and repo for the participant guide

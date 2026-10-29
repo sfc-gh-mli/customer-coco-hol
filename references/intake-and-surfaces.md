@@ -15,7 +15,7 @@ Round 2:
    (text default `Participants leave able to repeat one real workflow on their own data, with a clear next step`).
    Save it as `outcome`; it appears on the app's Overview page and at the top of the facilitator guide, and shapes
    each step's situation and the final Next steps discussion.
-3. Event logistics (date, time/time zone, participant count; default `TBD; 10 participants`).
+3. Participant count (default `10`; sizes per-participant schemas/roles and the ML Snowsight compute pool). Don't ask for the event date or time zone.
 4. Sponsor/admin ownership and approved sandbox naming (no secrets).
 
 Round 3 — publishing (customer guide is delivered as a public GitHub repo + public Streamlit app):
@@ -41,7 +41,7 @@ Use JSON. Allowed enums: `track`: `data-engineering`, `machine-learning`, `analy
   "account_mode": "customer",
   "topics": [],
   "outcome": "Participants leave able to repeat one real workflow on their own data, with a clear next step.",
-  "event": {"date": null, "timezone": null, "participants": 10},
+  "event": {"participants": 10},
   "sandbox_database": "HOL_EXAMPLE_20261026",
   "warehouse": "HOL_EXAMPLE_WH",
   "participant_schema": "P001",

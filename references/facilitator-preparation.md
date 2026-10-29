@@ -11,7 +11,7 @@ The generated `facilitator/facilitator-guide.md` (from `assets/facilitator-guide
 - [ ] Meet customer sponsor and Snowflake admin one week before the event.
 - [ ] Confirm organization, industry, one persona, interface, account mode, expected experience and specific topics.
 - [ ] Agree measurable outcomes and the 60-minute agenda; identify demos versus exercises.
-- [ ] Confirm date/time zone, cohort count, facilitator, sponsor and admin owners. Keep private contacts outside the public guide.
+- [ ] Confirm cohort count, facilitator, sponsor and admin owners. Keep private contacts outside the public guide.
 - [ ] Review region/model policy, trial limits, network/install constraints, authentication, package/runtime availability, CoWork and optional email availability.
 - [ ] Deliver the admin pack, synthetic-data ZIP/checksums and private participant-role roster instructions.
 - [ ] Admin creates isolated sandbox/warehouse, uploads and verifies data, grants participant roles and feature-specific access.
